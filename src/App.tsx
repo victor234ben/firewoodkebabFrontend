@@ -77,8 +77,8 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Navbar />
-            <CartDrawer />
+            {/* <Navbar /> */}
+            {/* <CartDrawer /> */}
             <Routes>
                <Route path="/" element={<LaunchScreen />} />
 
@@ -115,7 +115,7 @@ const App = () => {
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <Footer />
+            {/* <Footer /> */}
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
