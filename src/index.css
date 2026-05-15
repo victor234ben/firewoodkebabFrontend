@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@200..700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Brand dark surface (hero, dark sections) ── */
+    --dark-base: #0e0d0b;
+    --dark-surface: #161410;
+    --dark-card: #1c1a16;
+    --dark-border: rgba(255, 255, 255, 0.09);
+    --dark-muted: rgba(255, 255, 255, 0.38);
+
+    /* ── Light content palette ── */
+    --background: 35 22% 97%;
+    --foreground: 20 20% 10%;
+
+    --card: 35 18% 100%;
+    --card-foreground: 20 20% 10%;
+
+    --popover: 35 18% 100%;
+    --popover-foreground: 20 20% 10%;
+
+    /* ── Primary: punchy burnt orange ── */
+    --primary: 25 96% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 25 96% 44%;
+
+    --secondary: 32 14% 91%;
+    --secondary-foreground: 20 18% 20%;
+
+    --muted: 32 10% 93%;
+    --muted-foreground: 20 8% 48%;
+
+    --accent: 25 88% 94%;
+    --accent-foreground: 25 96% 36%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 32 14% 88%;
+    --input: 32 14% 88%;
+    --ring: 25 96% 53%;
+
+    --radius: 0.75rem;
+
+    /* ── Extended brand tokens ── */
+    --warm-gold: 40 88% 54%;
+    --warm-brown: 20 28% 22%;
+    --cream: 35 28% 96%;
+    --charcoal: 20 12% 14%;
+    --spice-red: 6 78% 54%;
+
+    /* ── Gradients ── */
+    --gradient-hero: linear-gradient(135deg, hsl(25 96% 53% / 0.88), hsl(6 78% 54% / 0.75));
+    --gradient-warm: linear-gradient(160deg, hsl(35 28% 96%), hsl(32 18% 93%));
+    --gradient-cta: linear-gradient(135deg, hsl(25 96% 53%), hsl(40 88% 54%));
+    --gradient-dark: linear-gradient(160deg, #0e0d0b, #1a1610);
+
+    /* ── Shadows ── */
+    --shadow-sm: 0 1px 4px hsl(20 20% 10% / 0.07);
+    --shadow-card: 0 2px 14px hsl(20 20% 10% / 0.07);
+    --shadow-elevated: 0 8px 32px hsl(20 20% 10% / 0.11);
+    --shadow-glow: 0 0 48px hsl(25 96% 53% / 0.18);
+    --shadow-glow-sm: 0 0 20px hsl(25 96% 53% / 0.12);
+
+    /* ── Fonts as CSS variables (fallback safety) ── */
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+
+    /* ── Sidebar (keep as is) ── */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 20 14% 8%;
+    --foreground: 32 14% 92%;
+
+    --card: 20 14% 11%;
+    --card-foreground: 32 14% 92%;
+
+    --popover: 20 14% 11%;
+    --popover-foreground: 32 14% 92%;
+
+    --primary: 25 96% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 20 11% 17%;
+    --secondary-foreground: 32 14% 88%;
+
+    --muted: 20 11% 17%;
+    --muted-foreground: 32 8% 52%;
+
+    --accent: 25 36% 17%;
+    --accent-foreground: 25 96% 68%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 20 11% 19%;
+    --input: 20 11% 19%;
+    --ring: 25 96% 56%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  /* Consistent focus ring */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary) / 0.6);
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.45);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.7);
+  }
+}
+
+/* ─────────────────────────────────────────
+   COMPONENT LAYER
+   ───────────────────────────────────────── */
+@layer components {
+
+  /* Layout */
+  .container-wide {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  /* ── Dark section utility ──
+     Use on any section that should have
+     the dark hero-style background */
+  .section-dark {
+    background-color: var(--dark-base);
+    color: #fff;
+  }
+
+  .section-dark-surface {
+    background-color: var(--dark-surface);
+    color: #fff;
+  }
+
+  /* ── Section divider (alternating rhythm) ── */
+  .section-light {
+    background-color: hsl(var(--background));
+  }
+
+  .section-warm {
+    background: var(--gradient-warm);
+  }
+
+  /* ── Glass card (for overlays on dark bg) ── */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .glass-card-dark {
+    background: rgba(14, 13, 11, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* ── Eyebrow label (section labels above headings) ── */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background-color: hsl(var(--primary));
+    flex-shrink: 0;
+  }
+
+  .eyebrow-text {
+    color: hsl(var(--primary));
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-family: var(--font-body);
+  }
+
+  /* Dark section eyebrow */
+  .section-dark .eyebrow-text,
+  .section-dark-surface .eyebrow-text {
+    color: hsl(var(--primary));
+  }
+
+  /* ── Menu card ── */
+  .menu-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .menu-card:hover {
+    box-shadow: var(--shadow-elevated);
+    transform: translateY(-2px);
+  }
+
+  /* ── Primary button glow (on dark bg) ── */
+  .btn-glow {
+    box-shadow: var(--shadow-glow-sm);
+  }
+
+  .btn-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* ── Text utilities ── */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* ── Gradient text (for hero accents) ── */
+  .text-gradient {
+    background: var(--gradient-cta);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Subtle divider ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      hsl(var(--border)),
+      transparent
+    );
+  }
+
+  .divider-dark {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+  }
+}
