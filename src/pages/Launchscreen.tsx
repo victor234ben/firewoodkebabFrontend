@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, ArrowRight, Clock, Mail, CheckCircle } from "lucide-react";
+import logoWhite from "@/assets/logo_white.png";
 
 const PRIMARY = "#e8702a";
 const PRIMARY_DIM = "rgba(232,112,42,0.15)";
@@ -112,46 +113,7 @@ export default function LaunchScreen() {
         }}
       />
 
-      {/* ── Nav-level brand mark ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        style={{
-          position: "absolute",
-          top: "2rem",
-          left: "2.5rem",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: PRIMARY_DIM,
-            border: `1px solid ${PRIMARY_BORDER}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Flame size={18} color={PRIMARY} />
-        </div>
-        <span
-          style={{
-            fontSize: 16,
-            fontWeight: 700,
-            color: "#fff",
-            letterSpacing: "0.04em",
-          }}
-        >
-          {APP_NAME}
-        </span>
-      </motion.div>
-
+  
       {/* ── Main content ── */}
       <div
         style={{
@@ -167,10 +129,20 @@ export default function LaunchScreen() {
           initial={{ scale: 0.75, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.55, ease: "easeOut" }}
-          style={{ marginBottom: 32, display: "flex", justifyContent: "center" }}
+          style={{
+            marginBottom: 32,
+            display: "flex",
+            justifyContent: "center",
+          }}
         >
           <motion.div
-            animate={{ boxShadow: ["0 0 18px rgba(232,112,42,0.2)", "0 0 36px rgba(232,112,42,0.45)", "0 0 18px rgba(232,112,42,0.2)"] }}
+            animate={{
+              boxShadow: [
+                "0 0 18px rgba(232,112,42,0.2)",
+                "0 0 36px rgba(232,112,42,0.45)",
+                "0 0 18px rgba(232,112,42,0.2)",
+              ],
+            }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
             style={{
               width: 80,
@@ -183,7 +155,13 @@ export default function LaunchScreen() {
               justifyContent: "center",
             }}
           >
-            <Flame size={36} color={PRIMARY} />
+             <img
+              // src={isTransparent ? logoWhite : logoBlack}
+              src={logoWhite}
+              alt="Firewood Kebab"
+              className="h-[84px] w-auto block dark:hidden transition-opacity duration-200"
+              height={52}
+            />
           </motion.div>
         </motion.div>
 
@@ -210,7 +188,7 @@ export default function LaunchScreen() {
               color: PRIMARY,
             }}
           >
-             Pending
+            Pending
           </span>
           <div style={{ width: 32, height: 1, background: PRIMARY }} />
         </motion.div>
@@ -249,7 +227,8 @@ export default function LaunchScreen() {
             margin: "0 auto 40px",
           }}
         >
-          We're putting the finishing touches on our kitchen. Drop your email and we'll let you know the moment the grill is hot.
+          We're putting the finishing touches on our kitchen. Drop your email
+          and we'll let you know the moment the grill is hot.
         </motion.p>
 
         {/* Status badge */}
@@ -304,7 +283,15 @@ export default function LaunchScreen() {
                   justifyContent: "center",
                 }}
               >
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minWidth: 240 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    flex: 1,
+                    minWidth: 240,
+                  }}
+                >
                   <div
                     style={{
                       display: "flex",
@@ -322,7 +309,10 @@ export default function LaunchScreen() {
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError("");
+                      }}
                       placeholder="your@email.com"
                       style={{
                         flex: 1,
@@ -336,7 +326,14 @@ export default function LaunchScreen() {
                     />
                   </div>
                   {error && (
-                    <span style={{ fontSize: 12, color: "rgba(239,68,68,0.8)", textAlign: "left", paddingLeft: 4 }}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: "rgba(239,68,68,0.8)",
+                        textAlign: "left",
+                        paddingLeft: 4,
+                      }}
+                    >
                       {error}
                     </span>
                   )}
@@ -364,11 +361,13 @@ export default function LaunchScreen() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 12px 32px rgba(232,112,42,0.6)";
+                    e.currentTarget.style.boxShadow =
+                      "0 12px 32px rgba(232,112,42,0.6)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(232,112,42,0.4)";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 24px rgba(232,112,42,0.4)";
                   }}
                 >
                   Notify Me
