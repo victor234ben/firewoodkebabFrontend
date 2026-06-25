@@ -201,7 +201,6 @@ export const useUserOrders = (params?: {
     queryKey: ["userOrders", params],
     queryFn: async () => {
       const { data } = await ordersAPI.getUserOrders(params);
-      console.log("Fetched user orders:", data);
       return { orders: data.data.data, pagination: data.data.pagination };
     },
   });
@@ -229,7 +228,7 @@ export const useGuestOrderTracking = (guestToken: string) =>
   useQuery({
     queryKey: ["guestOrderTracking", guestToken],
     queryFn: async () => {
-      const { data } = await client.get(`/orders/guest/${guestToken}/track`);
+      const { data } = await client.get(`/orders/guest/${guestToken}`);
       return data.data;
     },
     enabled: !!guestToken,
@@ -318,6 +317,17 @@ export const useSetDefaultAddress = () => {
 export const useDeleteAccount = () =>
   useMutation({
     mutationFn: (password: string) => userAPI.deleteAccount(password),
+  });
+
+export const useChangePassword = () =>
+  useMutation({
+    mutationFn: ({
+      currentPassword,
+      newPassword,
+    }: {
+      currentPassword: string;
+      newPassword: string;
+    }) => userAPI.changePassword(currentPassword, newPassword),
   });
 export const useNotificationPreferences = () =>
   useQuery({
@@ -459,7 +469,7 @@ export const useBanners = () =>
   useQuery<Banner[]>({
     queryKey: ["banners"],
     queryFn: () => promotionsAPI.getBanners(),
-    // staleTime: 5 * 60 * 1000, // 5 min — banners don't change frequently
+    staleTime: 5 * 60 * 1000, // 5 min — banners don't change frequently
   });
 
 export const useValidateCoupon = (code: string) =>

@@ -25,18 +25,21 @@ const AddressesTab = () => {
   const [street, setStreet] = useState("");
   const [street2, setStreet2] = useState("");
   const [zipCode, setZipCode] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("US");
   const [isDefault, setIsDefault] = useState(false);
 
   const handleAdd = async () => {
     // Validate required fields
-    if (!street.trim() || !zipCode.trim()) {
-      toast.error("Please enter street address and ZIP code");
+    if (!street.trim() || !zipCode.trim() || !city.trim() || !state.trim() || !country.trim()) {
+      toast.error("Please fill in all required address fields");
       return;
     }
 
     // Validate ZIP code format
     if (!/^\d{5}(-\d{4})?$/.test(zipCode.trim())) {
-      toast.error("Please enter a valid ZIP code (e.g., 92614)");
+      toast.error("Please enter a valid ZIP code (e.g., 32763)");
       return;
     }
 
@@ -46,9 +49,9 @@ const AddressesTab = () => {
         street: street.trim(),
         street2: street2.trim() || undefined,
         zipCode: zipCode.trim(),
-        city: "", // CA addresses don't always need city
-        state: "CA", // Always California
-        country: "US", // Always USA
+        city: city.trim(),
+        state: state.trim(),
+        country: country.trim(),
         isDefault,
       });
 
@@ -58,6 +61,9 @@ const AddressesTab = () => {
       setStreet("");
       setStreet2("");
       setZipCode("");
+      setCity("");
+      setState("");
+      setCountry("US");
       setIsDefault(false);
     } catch (error: any) {
       const msg = error.response?.data?.message || "Failed to add address";
@@ -139,24 +145,43 @@ const AddressesTab = () => {
             <Input
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
-              placeholder="e.g. 92614"
+              placeholder="e.g. 32763"
               maxLength={10}
               className="rounded-lg h-10"
             />
             <p className="text-xs text-muted-foreground">
-              Format: 5 digits or 5+4 (e.g., 92614-1234)
+              Format: 5 digits or 5+4 (e.g., 32763-1234)
             </p>
           </div>
 
-          {/* State & Country (Informational) */}
-          <div className="grid sm:grid-cols-2 gap-4 p-3 bg-card rounded-lg border border-border">
-            <div>
-              <Label className="font-semibold text-sm">State</Label>
-              <p className="text-sm text-foreground mt-1">California (CA)</p>
+          {/* City, State, Country Fields */}
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="font-semibold">City</Label>
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Orange City"
+                className="rounded-lg h-10"
+              />
             </div>
-            <div>
-              <Label className="font-semibold text-sm">Country</Label>
-              <p className="text-sm text-foreground mt-1">United States (US)</p>
+            <div className="space-y-2">
+              <Label className="font-semibold">State</Label>
+              <Input
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="FL"
+                className="rounded-lg h-10"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="font-semibold">Country</Label>
+              <Input
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="US"
+                className="rounded-lg h-10"
+              />
             </div>
           </div>
 
@@ -214,7 +239,7 @@ const AddressesTab = () => {
                   {addr.street2 && `, ${addr.street2}`}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {addr.zipCode}, California
+                  {[addr.city, addr.state, addr.country].filter(Boolean).join(", ")} {addr.zipCode}
                 </p>
               </div>
 

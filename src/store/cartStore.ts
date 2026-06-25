@@ -284,8 +284,6 @@ export const useCartStore = create<CartStore>()(
             response.globalDefaults?.minOrderAmount ??
             500;
 
-          console.log("Loaded delivery settings:", response);
-
           set({
             deliveryFee: flatFee,
             deliverySettingsLoaded: true,

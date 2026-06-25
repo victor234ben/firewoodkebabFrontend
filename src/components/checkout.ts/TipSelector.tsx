@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { formatPrice } from "@/utils/helpers";
 
 interface TipSelectorProps {
   subtotal: number;
@@ -55,7 +56,7 @@ export function TipSelector({ subtotal, tipPercentages, onTipChange }: TipSelect
                 : "border-border hover:bg-muted"
             }`}
           >
-            {pct}% · ${((subtotal * pct) / 100).toFixed(2)}
+            {pct}% · {formatPrice((subtotal * pct) / 100)}
           </button>
         ))}
         <button

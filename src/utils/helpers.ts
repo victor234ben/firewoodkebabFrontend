@@ -1,5 +1,10 @@
 export const formatPrice = (amount: number): string => {
-  return `$${amount?.toLocaleString()}`;
+  if (amount == null) return "$0.00";
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2
+  }).format(amount);
 };
 
 export const truncateText = (text: string, maxLength: number): string => {

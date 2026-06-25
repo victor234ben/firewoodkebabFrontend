@@ -25,7 +25,7 @@ export interface Coupon {
   minOrderAmount?: number;
   maxUsagePerUser?: number;
   maxTotalUsage?: number;
-  currentUsageCount?: number; G
+  currentUsageCount?: number;
   startDate: string;
   endDate: string;
   isActive: boolean;

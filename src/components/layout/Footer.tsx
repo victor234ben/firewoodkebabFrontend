@@ -120,7 +120,7 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
           </p>
           <div className="flex gap-6">
-            {/* <Link
+            <Link
               to="/privacy-policy"
               className="hover:text-cream transition-colors"
             >
@@ -128,7 +128,7 @@ const Footer = () => {
             </Link>
             <Link to="/terms" className="hover:text-cream transition-colors">
               Terms of Service
-            </Link> */}
+            </Link>
           </div>
         </div>
       </div>

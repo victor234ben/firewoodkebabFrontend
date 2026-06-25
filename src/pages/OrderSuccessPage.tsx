@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
+import { formatPrice } from '@/utils/helpers';
 
 interface OrderData {
   id: string;
@@ -39,6 +40,28 @@ const OrderSuccessPage = () => {
       return;
     }
   }, [orderData, navigate]);
+
+  // Save guest order tracking info
+  useEffect(() => {
+    if (orderData && !user && orderData.guestToken) {
+      try {
+        const existing = localStorage.getItem("guest_orders");
+        const orders = existing ? JSON.parse(existing) : [];
+        if (!orders.some((o: any) => o.guestToken === orderData.guestToken)) {
+          orders.push({
+            guestToken: orderData.guestToken,
+            orderNumber: orderData.orderNumber,
+            total: orderData.totalWithTip || orderData.total,
+            createdAt: new Date().toISOString(),
+            paymentMethod: orderData.paymentMethod,
+          });
+          localStorage.setItem("guest_orders", JSON.stringify(orders));
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+  }, [orderData, user]);
 
   // Auto-redirect countdown for guests
   useEffect(() => {
@@ -116,7 +139,7 @@ const OrderSuccessPage = () => {
             <div>
               <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
               <p className="text-2xl font-bold text-primary">
-                ${orderData.totalWithTip.toFixed(2)}
+                {formatPrice(orderData.totalWithTip)}
               </p>
             </div>
           </div>

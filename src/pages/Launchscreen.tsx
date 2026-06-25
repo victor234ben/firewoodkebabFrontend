@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Flame, ArrowRight, Clock, Mail, CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import { Clock } from "lucide-react";
 import logoWhite from "@/assets/logo_white.png";
+import { APP_NAME } from "@/utils/constants";
 
 const PRIMARY = "#e8702a";
 const PRIMARY_DIM = "rgba(232,112,42,0.15)";
@@ -11,10 +11,8 @@ const WHITE_45 = "rgba(255,255,255,0.45)";
 const WHITE_08 = "rgba(255,255,255,0.08)";
 const WHITE_12 = "rgba(255,255,255,0.12)";
 
-const APP_NAME = "FireGrill";
-
 // Particle dots floating up
-const FloatingParticle = ({ style }) => (
+const FloatingParticle = ({ style }: { style: any }) => (
   <motion.div
     style={{
       position: "absolute",
@@ -47,20 +45,6 @@ const particles = Array.from({ length: 12 }, (_, i) => ({
 }));
 
 export default function LaunchScreen() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      setError("Please enter a valid email.");
-      return;
-    }
-    setError("");
-    setSubmitted(true);
-  };
-
   return (
     <div
       style={{
@@ -113,7 +97,6 @@ export default function LaunchScreen() {
         }}
       />
 
-  
       {/* ── Main content ── */}
       <div
         style={{
@@ -156,10 +139,9 @@ export default function LaunchScreen() {
             }}
           >
              <img
-              // src={isTransparent ? logoWhite : logoBlack}
               src={logoWhite}
-              alt="Firewood Kebab"
-              className="h-[84px] w-auto block dark:hidden transition-opacity duration-200"
+              alt={APP_NAME}
+              className="h-[84px] w-auto block transition-opacity duration-200"
               height={52}
             />
           </motion.div>
@@ -188,7 +170,7 @@ export default function LaunchScreen() {
               color: PRIMARY,
             }}
           >
-            Pending
+            Coming Soon
           </span>
           <div style={{ width: 32, height: 1, background: PRIMARY }} />
         </motion.div>
@@ -227,8 +209,7 @@ export default function LaunchScreen() {
             margin: "0 auto 40px",
           }}
         >
-          We're putting the finishing touches on our kitchen. Drop your email
-          and we'll let you know the moment the grill is hot.
+          We're putting the finishing touches on our kitchen. Get ready to experience authentic world cuisine crafted with love and the finest ingredients.
         </motion.p>
 
         {/* Status badge */}
@@ -263,142 +244,29 @@ export default function LaunchScreen() {
           </span>
         </motion.div>
 
-        {/* Email form */}
+        {/* Static coming soon notice */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, delay: 0.44 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            maxWidth: 320,
+            margin: "0 auto",
+            padding: "12px 24px",
+            borderRadius: 12,
+            background: "rgba(255,255,255,0.05)",
+            border: `1px solid ${WHITE_12}`,
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 600,
+          }}
         >
-          <AnimatePresence mode="wait">
-            {!submitted ? (
-              <motion.form
-                key="form"
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0, y: -8 }}
-                onSubmit={handleSubmit}
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  flexWrap: "wrap",
-                  justifyContent: "center",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 6,
-                    flex: 1,
-                    minWidth: 240,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      background: "rgba(255,255,255,0.05)",
-                      border: `1px solid ${error ? "rgba(239,68,68,0.5)" : WHITE_12}`,
-                      borderRadius: 12,
-                      padding: "0 16px",
-                      height: 52,
-                      transition: "border-color 0.2s",
-                    }}
-                  >
-                    <Mail size={16} color={WHITE_45} />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        setError("");
-                      }}
-                      placeholder="your@email.com"
-                      style={{
-                        flex: 1,
-                        background: "transparent",
-                        border: "none",
-                        outline: "none",
-                        color: "#fff",
-                        fontSize: 14,
-                        fontFamily: "inherit",
-                      }}
-                    />
-                  </div>
-                  {error && (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: "rgba(239,68,68,0.8)",
-                        textAlign: "left",
-                        paddingLeft: 4,
-                      }}
-                    >
-                      {error}
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  style={{
-                    height: 52,
-                    padding: "0 28px",
-                    borderRadius: 12,
-                    background: PRIMARY,
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#fff",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    letterSpacing: "0.04em",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    boxShadow: `0 8px 24px rgba(232,112,42,0.4)`,
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                    whiteSpace: "nowrap",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 12px 32px rgba(232,112,42,0.6)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 8px 24px rgba(232,112,42,0.4)";
-                  }}
-                >
-                  Notify Me
-                  <ArrowRight size={15} />
-                </button>
-              </motion.form>
-            ) : (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.92, y: 8 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                  padding: "16px 28px",
-                  borderRadius: 12,
-                  background: "rgba(34,197,94,0.1)",
-                  border: "1px solid rgba(34,197,94,0.25)",
-                  color: "rgba(134,239,172,1)",
-                  fontSize: 15,
-                  fontWeight: 600,
-                }}
-              >
-                <CheckCircle size={18} />
-                You're on the list — we'll fire you a message soon!
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <Clock size={16} style={{ color: PRIMARY }} />
+          <span>Launch Date to be Announced</span>
         </motion.div>
 
         {/* Divider */}

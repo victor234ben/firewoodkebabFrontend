@@ -13,6 +13,8 @@ import { formatPrice } from "@/utils/helpers";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import client from "@/services/api/client";
+import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
 
 const OrderConfirmedPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +26,36 @@ const OrderConfirmedPage = () => {
   const [verificationError, setVerificationError] = useState<string | null>(
     null,
   );
+
+  const clearCart = useCartStore((s) => s.clearCart);
+  const user = useAuthStore((s) => s.user);
+
+  // Clear cart immediately on landing
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
+
+  // Save guest order tracking info
+  useEffect(() => {
+    if (order && !user && order.guestToken) {
+      try {
+        const existing = localStorage.getItem("guest_orders");
+        const orders = existing ? JSON.parse(existing) : [];
+        if (!orders.some((o: any) => o.guestToken === order.guestToken)) {
+          orders.push({
+            guestToken: order.guestToken,
+            orderNumber: order.orderNumber,
+            total: order.totalWithTip || order.total,
+            createdAt: order.createdAt || new Date().toISOString(),
+            paymentMethod: order.paymentMethod,
+          });
+          localStorage.setItem("guest_orders", JSON.stringify(orders));
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+  }, [order, user]);
 
   // Verify payment if session_id is in URL
   useEffect(() => {

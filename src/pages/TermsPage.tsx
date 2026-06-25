@@ -8,7 +8,7 @@ const TermsPage = () => (
       <h2>1. Acceptance of Terms</h2>
       <p>By accessing and using {APP_NAME}'s website and services, you agree to be bound by these terms and conditions.</p>
       <h2>2. Orders & Payment</h2>
-      <p>All orders are subject to availability. Prices are listed in world Naira ($) and include applicable taxes. Payment is processed securely through our payment partners.</p>
+      <p>All orders are subject to availability. Prices are listed in US Dollars ($) and include applicable taxes. Payment is processed securely through our payment partners.</p>
       <h2>3. Delivery</h2>
       <p>Delivery times are estimates and may vary depending on location and demand. We strive to deliver within the estimated timeframe provided at checkout.</p>
       <h2>4. Cancellations & Refunds</h2>

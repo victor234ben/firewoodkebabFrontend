@@ -9,5 +9,5 @@ export const ordersAPI = {
   resendConfirmation: (id: string) => client.post(`/orders/${id}/resend-confirmation`),
   getUserOrders: (params?: { page?: number; limit?: number; status?: string }) =>
     client.get('/orders/user', { params }),
-  
+  claimGuestOrders: (guestTokens: string[]) => client.post('/orders/claim-guest-orders', { guestTokens }),
 };

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { User, Package, MapPin, Bell, LogOut, Loader2 } from "lucide-react";
+import { User, Package, MapPin, Bell, LogOut, Loader2, Lock } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useChangePassword } from "@/hooks/useApi";
 import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -17,7 +21,7 @@ const tabs = [
   { id: "orders", label: "My Orders", icon: Package },
   { id: "addresses", label: "Addresses", icon: MapPin },
   { id: "notifications", label: "Notifications", icon: Bell },
-  // { id: 'password', label: 'Change Password', icon: Lock },
+  { id: "password", label: "Change Password", icon: Lock },
 ];
 
 const AccountPage = () => {
@@ -95,7 +99,7 @@ const AccountPage = () => {
               {activeTab === "orders" && <OrdersTab />}
               {activeTab === "addresses" && <AddressesTab />}
               {activeTab === "notifications" && <NotificationsTab />}
-              {/* {activeTab === 'password' && <PasswordTab />} */}
+              {activeTab === "password" && <PasswordTab />}
             </motion.div>
           </div>
         </div>
@@ -106,38 +110,84 @@ const AccountPage = () => {
 
 
 /* ─── PASSWORD TAB ─── */
-// const PasswordTab = () => {
-//   const [current, setCurrent] = useState('');
-//   const [newPw, setNewPw] = useState('');
-//   const [confirm, setConfirm] = useState('');
-//   const updateProfile = useUpdateProfile();
+const PasswordTab = () => {
+  const [current, setCurrent] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const changePassword = useChangePassword();
 
-//   const handleChange = async () => {
-//     if (newPw.length < 8) { toast.error('Password must be at least 8 characters'); return; }
-//     if (newPw !== confirm) { toast.error('Passwords do not match'); return; }
-//     try {
-//       // Use forgot-password flow or profile update depending on backend
-//       await updateProfile.mutateAsync({ firstName: undefined }); // trigger API connection test
-//       toast.success('Password changed successfully!');
-//       setCurrent(''); setNewPw(''); setConfirm('');
-//     } catch {
-//       toast.error('Failed to change password');
-//     }
-//   };
+  const handleChange = async () => {
+    if (!current) {
+      toast.error("Please enter your current password");
+      return;
+    }
+    if (newPw.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    if (newPw === current) {
+      toast.error("New password cannot be the same as current password");
+      return;
+    }
+    if (newPw !== confirm) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    try {
+      await changePassword.mutateAsync({
+        currentPassword: current,
+        newPassword: newPw,
+      });
+      toast.success("Password changed successfully!");
+      setCurrent("");
+      setNewPw("");
+      setConfirm("");
+    } catch (error: any) {
+      const msg = error.response?.data?.message || "Failed to change password";
+      toast.error(msg);
+    }
+  };
 
-//   return (
-//     <div>
-//       <h2 className="text-xl font-display font-bold text-foreground mb-6">Change Password</h2>
-//       <div className="space-y-4 max-w-md">
-//         <div className="space-y-2"><Label>Current Password</Label><Input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} /></div>
-//         <div className="space-y-2"><Label>New Password</Label><Input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="Min. 8 characters" /></div>
-//         <div className="space-y-2"><Label>Confirm New Password</Label><Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></div>
-//         <Button onClick={handleChange} disabled={updateProfile.isPending}>
-//           {updateProfile.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null} Update Password
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// };
+  return (
+    <div>
+      <h2 className="text-xl font-display font-bold text-foreground mb-6">
+        Change Password
+      </h2>
+      <div className="space-y-4 max-w-md">
+        <div className="space-y-2">
+          <Label>Current Password</Label>
+          <Input
+            type="password"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>New Password</Label>
+          <Input
+            type="password"
+            value={newPw}
+            onChange={(e) => setNewPw(e.target.value)}
+            placeholder="Min. 8 characters"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Confirm New Password</Label>
+          <Input
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+        </div>
+        <Button onClick={handleChange} disabled={changePassword.isPending}>
+          {changePassword.isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+          ) : null}
+          Update Password
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export default AccountPage;

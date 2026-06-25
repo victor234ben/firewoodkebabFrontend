@@ -23,6 +23,7 @@ import AccountPage from "./pages/AccountPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import NotFound from "./pages/NotFound";
+import MyOrdersPage from "./pages/MyOrdersPage";
 import MenuItemDetailsPage from "./components/menu/MenuItemDetailsPage";
 import { useAuthStore } from "./store/authStore";
 import { useNotifications, useSocketInit } from "./hooks/useSocket";
@@ -32,7 +33,11 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import GuestOrderTrackingPage from "./components/order/GuestOrderTrackingPage";
 import LaunchScreen from "./pages/Launchscreen";
 
+import { ErrorBoundary } from "./components/ErrorBoundary";
+
 const queryClient = new QueryClient();
+
+const isMaintenance = import.meta.env.VITE_APP_MODE === "maintenance";
 
 const App = () => {
   const token = useAuthStore((s) => s.accessToken);
@@ -40,9 +45,6 @@ const App = () => {
 
   useSocketInit(token || null, user?._id || null);
   const { globalSeo } = useSeoStore();
-  useNotifications((notification) => {
-    console.log("Got notification:", notification);
-  });
 
   return (
     <HelmetProvider>
@@ -60,7 +62,6 @@ const App = () => {
         )}
       </Helmet>
 
-      {/* Google Analytics — runs once globally */}
       {globalSeo?.googleAnalyticsId && (
         <>
           <script
@@ -72,52 +73,71 @@ const App = () => {
           </script>
         </>
       )}
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            {/* <Navbar /> */}
-            {/* <CartDrawer /> */}
-            <Routes>
-               <Route path="/" element={<LaunchScreen />} />
 
-              {/* <Route path="/" element={<Index />} />
-              <Route path="/menu" element={<MenuPage />} />
-              <Route path="/menu/:itemId" element={<MenuItemDetailsPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route
-                path="/reset-password/:token"
-                element={<ResetPasswordPage />}
-              />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/catering" element={<CateringPage />} /> */}
-              {/* Checkout Flow */}
-              {/* <Route
-                path="/checkout/location"
-                element={<CheckoutLocationPage />}
-              />
-              <Route path="/checkout" element={<CheckoutPage />} /> */}
-              {/* Order Pages */}
-              {/* <Route
-                path="/order/:id/confirmed"
-                element={<OrderConfirmedPage />}
-              />
-              <Route path="/track/:guestToken" element={<GuestOrderTrackingPage />} />
-              <Route path="/order-success" element={<OrderSuccessPage />} />
-              <Route path="/order/:id/track" element={<OrderTrackingPage />} />
-              <Route path="/account" element={<AccountPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} /> */}
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            {/* <Footer /> */}
-          </BrowserRouter>
-        </TooltipProvider>
+      <QueryClientProvider client={queryClient}>
+        <ErrorBoundary>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+
+            {isMaintenance ? (
+              // 👇 maintenance mode — show LaunchScreen for every route
+              <BrowserRouter>
+                <Routes>
+                  <Route path="*" element={<LaunchScreen />} />
+                </Routes>
+              </BrowserRouter>
+            ) : (
+              // 👇 normal mode
+              <BrowserRouter>
+                <Navbar />
+                <CartDrawer />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/menu" element={<MenuPage />} />
+                  <Route path="/menu/:itemId" element={<MenuItemDetailsPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route
+                    path="/forgot-password"
+                    element={<ForgotPasswordPage />}
+                  />
+                  <Route
+                    path="/reset-password/:token"
+                    element={<ResetPasswordPage />}
+                  />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/catering" element={<CateringPage />} />
+                  <Route
+                    path="/checkout/location"
+                    element={<CheckoutLocationPage />}
+                  />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route
+                    path="/order/:id/confirmed"
+                    element={<OrderConfirmedPage />}
+                  />
+                  <Route
+                    path="/track/:guestToken"
+                    element={<GuestOrderTrackingPage />}
+                  />
+                  <Route path="/order-success" element={<OrderSuccessPage />} />
+                  <Route
+                    path="/order/:id/track"
+                    element={<OrderTrackingPage />}
+                  />
+                  <Route path="/account" element={<AccountPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/my-orders" element={<MyOrdersPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Footer />
+              </BrowserRouter>
+            )}
+          </TooltipProvider>
+        </ErrorBoundary>
       </QueryClientProvider>
     </HelmetProvider>
   );

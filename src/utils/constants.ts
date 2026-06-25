@@ -2,8 +2,8 @@ export const APP_NAME = 'FirewoodKebab';
 export const APP_TAGLINE = 'Authentic flavors, delivered to your door';
 export const APP_DESCRIPTION = 'Experience the finest world cuisine with convenient online ordering, fast delivery, and easy pickup.';
 
-export const STORE_ADDRESS = '25 Victoria Island, Lagos, Canada';
-export const STORE_PHONE = '+234 801 234 5678';
+export const STORE_ADDRESS = 'Orange City, Florida, United States';
+export const STORE_PHONE = '+1 (386) 555-0199';
 export const STORE_EMAIL = 'hello@firewoodkebab.com';
 
 export const OPENING_HOURS = [

@@ -183,9 +183,9 @@ const CheckoutPage = () => {
           zipCode: deliveryStore.locationData?.zipCode || "",
           latitude: deliveryStore.locationData?.latitude,
           longitude: deliveryStore.locationData?.longitude,
-          city: "",
-          state: "CA",
-          country: "US",
+          city: deliveryStore.locationData?.selectedAddress?.city || "",
+          state: deliveryStore.locationData?.selectedAddress?.state || "",
+          country: deliveryStore.locationData?.selectedAddress?.country || "US",
         },
       }),
       ...(!user && {
@@ -333,7 +333,7 @@ const CheckoutPage = () => {
                       <p className="font-semibold text-foreground">Delivery</p>
                       <p className="text-sm text-muted-foreground">
                         {deliveryStore.getDeliveryFee() > 0
-                          ? `$${deliveryStore.getDeliveryFee().toFixed(2)}`
+                          ? formatPrice(deliveryStore.getDeliveryFee())
                           : "Free"}
                       </p>
                     </div>
@@ -382,7 +382,7 @@ const CheckoutPage = () => {
                             <div>
                               <p className="text-muted-foreground">Fee</p>
                               <p className="font-semibold text-foreground">
-                                ${deliveryFee.toFixed(2)}
+                                {formatPrice(deliveryFee)}
                               </p>
                             </div>
                             <div>
@@ -403,10 +403,7 @@ const CheckoutPage = () => {
                             <div>
                               <p className="text-muted-foreground">Min Order</p>
                               <p className="font-semibold text-foreground">
-                                $
-                                {(
-                                  deliveryZoneData?.zone?.minimumOrder ?? 0
-                                ).toFixed(2)}
+                                {formatPrice(deliveryZoneData?.zone?.minimumOrder ?? 0)}
                               </p>
                             </div>
                           </div>
@@ -727,7 +724,7 @@ const CheckoutPage = () => {
                   }
                   className="space-y-3"
                 >
-                  {(["cash", "stripe"] as const).map((m) => (
+                  {(["stripe", ...(paymentOptions?.cashOnDeliveryEnabled ? ["cash"] : [])] as const).map((m) => (
                     <motion.label
                       key={m}
                       whileHover={{ y: -2 }}
@@ -797,7 +794,7 @@ const CheckoutPage = () => {
                             {item.quantity}× {item.name}
                           </span>
                           <span className="font-semibold text-foreground">
-                            ${item.itemTotal.toFixed(2)}
+                            {formatPrice(item.itemTotal)}
                           </span>
                         </motion.div>
                       ))}
@@ -810,7 +807,7 @@ const CheckoutPage = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span className="text-foreground font-medium">
-                      ${subtotal.toFixed(2)}
+                      {formatPrice(subtotal)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -818,7 +815,7 @@ const CheckoutPage = () => {
                     <span className="text-foreground font-medium">
                       {deliveryType === "collection"
                         ? "Free"
-                        : `$${deliveryFee.toFixed(2)}`}
+                        : formatPrice(deliveryFee)}
                     </span>
                   </div>
                   {discount > 0 && (
@@ -828,7 +825,7 @@ const CheckoutPage = () => {
                         style={{ color: "#10b981" }}
                         className="font-medium"
                       >
-                        -${discount.toFixed(2)}
+                        -{formatPrice(discount)}
                       </span>
                     </div>
                   )}
@@ -836,7 +833,7 @@ const CheckoutPage = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Tip</span>
                       <span className="text-foreground font-medium">
-                        ${tipAmount.toFixed(2)}
+                        {formatPrice(tipAmount)}
                       </span>
                     </div>
                   )}
@@ -851,14 +848,14 @@ const CheckoutPage = () => {
                       Subtotal + Delivery
                     </span>
                     <span className="text-foreground font-medium">
-                      ${totalBeforeTip.toFixed(2)}
+                      {formatPrice(totalBeforeTip)}
                     </span>
                   </div>
                   {tipAmount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">+ Tip</span>
                       <span className="text-foreground font-medium">
-                        ${tipAmount.toFixed(2)}
+                        {formatPrice(tipAmount)}
                       </span>
                     </div>
                   )}
@@ -875,7 +872,7 @@ const CheckoutPage = () => {
                     className="font-display font-black text-xl"
                     style={{ color: "hsl(var(--primary))" }}
                   >
-                    ${totalWithTip.toFixed(2)}
+                    {formatPrice(totalWithTip)}
                   </span>
                 </div>
 

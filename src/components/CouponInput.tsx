@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tag, Loader2, X, Check, AlertCircle } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { toast } from "sonner";
+import { formatPrice } from "@/utils/helpers";
 
 interface CouponInputProps {
   onApply?: () => void;
@@ -99,7 +100,7 @@ export function CouponInput({
                 <p className="text-xs text-emerald-400">
                   {coupon.type === "percentage"
                     ? `${coupon.value}% off`
-                    : `$${coupon.value} off`}
+                    : `${formatPrice(coupon.value)} off`}
                 </p>
               </div>
             </div>
@@ -203,7 +204,7 @@ export function CouponInput({
                   <p className="text-xs text-muted-foreground">
                     {coupon.type === "percentage"
                       ? `${coupon.value}% discount`
-                      : `$${coupon.value} off`}
+                      : `${formatPrice(coupon.value)} off`}
                   </p>
                 </div>
               </div>
@@ -222,7 +223,7 @@ export function CouponInput({
               <div className="flex items-center justify-between p-3 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
                 <span className="text-sm text-muted-foreground">You save</span>
                 <span className="font-bold text-emerald-400">
-                  -${getDiscount().toFixed(2)}
+                  -{formatPrice(getDiscount())}
                 </span>
               </div>
             )}
@@ -338,7 +339,7 @@ export function CouponInput({
             <p className="text-xs text-green-700">
               {coupon.type === "percentage"
                 ? `${coupon.value}% off`
-                : `$${coupon.value} off`}
+                : `${formatPrice(coupon.value)} off`}
             </p>
           </div>
           <button

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,22 @@ const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/account";
   const { login, isLoading } = useAuthStore();
+
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    try {
+      const existing = localStorage.getItem("guest_orders");
+      if (existing) {
+        const parsed = JSON.parse(existing);
+        if (Array.isArray(parsed)) {
+          setRecentOrders(parsed.slice(-3)); // Show up to last 3 orders
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }, []);
 
   const {
     register,
@@ -305,6 +321,35 @@ const LoginPage = () => {
             Create one
           </Link>
         </motion.p>
+
+        {recentOrders.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            className="mt-8 rounded-2xl p-5 border border-white/10"
+            style={{
+              background: "rgba(14, 13, 11, 0.6)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            <h3 className="font-display text-sm font-bold text-white mb-3 text-center">
+              Your Guest Orders
+            </h3>
+            <div className="space-y-2">
+              {recentOrders.map((o) => (
+                <div key={o.id} className="flex justify-between items-center text-xs">
+                  <span className="text-white/60 font-mono font-semibold">{o.orderNumber}</span>
+                  <Link to={`/track/${o.guestToken}`}>
+                    <Button variant="link" className="p-0 h-auto text-primary text-xs hover:text-white transition-colors">
+                      Track Order &rarr;
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

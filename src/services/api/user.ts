@@ -24,6 +24,8 @@ export const userAPI = {
   // Account
   deleteAccount: (password: string) =>
     client.delete("/user/account", { data: { password } }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    client.put("/user/change-password", { currentPassword, newPassword }),
 
   // Notification Preferences
   getNotificationPreferences: () => client.get("/user/preferences"),

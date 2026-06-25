@@ -5,6 +5,7 @@ import { authAPI } from "@/services/api/auth";
 import { userAPI } from "@/services/api/user";
 import { useCartStore } from "./cartStore";
 import { cartAPI } from "@/services/api/cart";
+import { ordersAPI } from "@/services/api/orders";
 
 
 interface AuthStore {
@@ -25,6 +26,7 @@ interface AuthStore {
   setUser: (user: User | null) => void;
   isAuthenticated: () => boolean;
   migrateGuestCart: () => Promise<void>;
+  claimGuestOrders: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -51,6 +53,7 @@ export const useAuthStore = create<AuthStore>()(
           console.info(`User logged in: ${user.email}`);
 
           await get().migrateGuestCart();
+          await get().claimGuestOrders();
 
           // Sync user's cart from server
           await useCartStore.getState().syncFromServer();
@@ -78,6 +81,7 @@ export const useAuthStore = create<AuthStore>()(
           console.info(`User registered: ${user.email}`);
 
           await get().migrateGuestCart();
+          await get().claimGuestOrders();
 
           // Sync user's cart from server
           await useCartStore.getState().syncFromServer();
@@ -154,6 +158,41 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error: any) {
           console.warn("Cart migration failed (non-blocking):", error?.message);
 
+        }
+      },
+
+      claimGuestOrders: async () => {
+        try {
+          const guestOrdersStr = localStorage.getItem("guest_orders");
+          if (!guestOrdersStr) {
+            console.debug("No guest orders to claim");
+            return;
+          }
+
+          const parsed = JSON.parse(guestOrdersStr);
+          if (!Array.isArray(parsed) || parsed.length === 0) {
+            console.debug("Guest orders list is empty");
+            return;
+          }
+
+          const guestTokens = parsed
+            .map((o: any) => o.guestToken)
+            .filter((token: string) => !!token);
+
+          if (guestTokens.length === 0) {
+            console.debug("No guest tokens found in localStorage orders");
+            return;
+          }
+
+          console.info(`Claiming guest orders for tokens: ${guestTokens.join(", ")}`);
+
+          await ordersAPI.claimGuestOrders(guestTokens);
+
+          // Once successful, wipe guest_orders from localStorage
+          localStorage.removeItem("guest_orders");
+          console.info("Guest orders claimed and wiped from localStorage");
+        } catch (error: any) {
+          console.warn("Guest order claiming failed (non-blocking):", error?.message);
         }
       },
     }),

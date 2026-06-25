@@ -34,27 +34,22 @@ export function useSocketInit(token: string | null, userId: string | null) {
     });
 
     socket.on("connect", () => {
-      console.log("[Socket] Connected:", socket?.id);
       reconnectAttempts = 0;
+      toast.dismiss("socket-reconnect");
 
       if (userId) {
         socket!.emit("USER_JOIN", { userId });
-        console.log("[Socket] Emitted USER_JOIN for user:", userId);
       }
     });
 
-    socket.on("USER_JOINED", (data) => {
-      console.log("[Socket] USER_JOINED confirmed:", data);
+    socket.on("USER_JOINED", () => {
+      // Handled silently
     });
 
     socket.on("connect_error", (error) => {
       reconnectAttempts++;
-      console.error(
-        `[Socket] Connection error (attempt ${reconnectAttempts}):`,
-        error.message,
-      );
-
       toast.error("Connection lost. Reconnecting...", {
+        id: "socket-reconnect",
         description: `Attempt ${reconnectAttempts} of 5`,
       });
     });
@@ -64,7 +59,6 @@ export function useSocketInit(token: string | null, userId: string | null) {
     });
 
     socket.on("disconnect", (reason) => {
-      console.log("[Socket] Disconnected:", reason);
       if (reason === "io server disconnect") {
         socket?.connect();
       }
@@ -90,11 +84,8 @@ export function useOrderSocket(
 
     socket.emit("order:track", orderId);
     activeRoomRef.current = `order-${orderId}`;
-    console.log("[Socket] Tracking order:", orderId);
 
     const handleOrderUpdate = (data: any) => {
-      console.log("[Socket] ORDER_UPDATE received:", data);
-
       onStatusChange({
         status: data.status,
         estimatedTime: data.estimatedTime,
@@ -139,8 +130,6 @@ export function useNotifications(
     if (!socket?.connected) return;
 
     const handleNotification = (data: any) => {
-      console.log("[Socket] NOTIFICATION received:", data);
-
       toast.info(data.title, {
         description: data.message,
       });
@@ -165,7 +154,6 @@ export function disconnectSocket() {
     socket.disconnect();
     socket = null;
     reconnectAttempts = 0;
-    console.log("[Socket] Disconnected and cleaned up");
   }
 }
 

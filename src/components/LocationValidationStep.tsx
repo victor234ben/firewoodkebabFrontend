@@ -70,6 +70,9 @@ const LocationValidationStep = ({
   const [addressLabel, setAddressLabel] = useState("Home");
   const [street, setStreet] = useState("");
   const [street2, setStreet2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("US");
   // addressZip pre-filled from validation but editable
   const [addressZip, setAddressZip] = useState("");
   const [aptUnit, setAptUnit] = useState("");
@@ -86,7 +89,7 @@ const LocationValidationStep = ({
       return;
     }
     if (!/^\d{5}(-\d{4})?$/.test(zipCode)) {
-      toast.error("Please enter a valid ZIP code (e.g., 92614)");
+      toast.error("Please enter a valid ZIP code (e.g., 32763)");
       return;
     }
 
@@ -216,8 +219,8 @@ const LocationValidationStep = ({
 
   // ── Handle full address form submission ──
   const handleConfirmAddress = () => {
-    if (!street.trim()) {
-      toast.error("Please enter your street address");
+    if (!street.trim() || !city.trim() || !state.trim() || !country.trim()) {
+      toast.error("Please enter street address, city, state and country");
       return;
     }
     // ZIP is required ONLY if lat/long don't exist
@@ -242,9 +245,9 @@ const LocationValidationStep = ({
       street: street.trim(),
       street2: street2.trim() || aptUnit.trim() || undefined,
       zipCode: addressZip.trim(),
-      city: "",
-      state: "CA",
-      country: "US",
+      city: city.trim(),
+      state: state.trim(),
+      country: country.trim(),
       latitude: validatedLatitude,
       longitude: validatedLongitude,
     };
@@ -551,7 +554,7 @@ const LocationValidationStep = ({
                           setZipCode(e.target.value);
                           setSelectedAddressId(null);
                         }}
-                        placeholder="e.g., 92614"
+                        placeholder="e.g., 32763"
                         maxLength={10}
                         className="rounded-xl h-11 text-lg"
                         style={{
@@ -816,7 +819,7 @@ const LocationValidationStep = ({
                       <Input
                         value={addressZip}
                         onChange={(e) => setAddressZip(e.target.value)}
-                        placeholder="e.g. 92614"
+                        placeholder="e.g. 32763"
                         maxLength={10}
                         className="rounded-xl h-11"
                         style={{
@@ -831,29 +834,46 @@ const LocationValidationStep = ({
                     </div>
                   )}
 
-                  {/* State / Country (read-only) */}
-                  <div
-                    className="grid grid-cols-2 gap-4 p-4 rounded-xl"
-                    style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid hsl(var(--border))",
-                    }}
-                  >
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        State
-                      </p>
-                      <p className="text-sm font-semibold text-foreground">
-                        California (CA)
-                      </p>
+                  {/* City, State, Country Fields */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-semibold text-xs">City</Label>
+                      <Input
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder="Orange City"
+                        className="rounded-xl h-11"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid hsl(var(--border))",
+                        }}
+                      />
                     </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        Country
-                      </p>
-                      <p className="text-sm font-semibold text-foreground">
-                        United States (US)
-                      </p>
+                    <div className="space-y-2">
+                      <Label className="font-semibold text-xs">State</Label>
+                      <Input
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                        placeholder="FL"
+                        className="rounded-xl h-11"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid hsl(var(--border))",
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-semibold text-xs">Country</Label>
+                      <Input
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        placeholder="US"
+                        className="rounded-xl h-11"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid hsl(var(--border))",
+                        }}
+                      />
                     </div>
                   </div>
 

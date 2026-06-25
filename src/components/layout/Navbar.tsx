@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, User, Menu, X, Loader2 } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Loader2, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
@@ -200,23 +200,48 @@ const Navbar = () => {
                 <User className="w-5 h-5" />
               </Link>
             ) : (
-              <Link to="/login" className="hidden md:block ml-1">
-                <Button
-                  size="sm"
-                  className="font-semibold rounded-lg"
+              <div className="flex items-center gap-1">
+                <Link
+                  to="/my-orders"
+                  className="p-2.5 rounded-lg transition-colors flex items-center gap-1.5"
                   style={{
-                    background: isTransparent
-                      ? "rgba(255,255,255,0.12)"
-                      : "hsl(var(--primary))",
-                    border: isTransparent
-                      ? "1px solid rgba(255,255,255,0.2)"
-                      : "none",
-                    color: "#fff",
+                    color: isTransparent
+                      ? "rgba(255,255,255,0.85)"
+                      : "rgba(255,255,255,0.75)",
                   }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                    e.currentTarget.style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = isTransparent
+                      ? "rgba(255,255,255,0.85)"
+                      : "rgba(255,255,255,0.75)";
+                  }}
+                  title="Guest Orders"
                 >
-                  Sign In
-                </Button>
-              </Link>
+                  <span className="text-xs font-semibold hidden lg:inline">Guest Orders</span>
+                  <ClipboardList className="w-5 h-5" />
+                </Link>
+                <Link to="/login" className="hidden md:block ml-1">
+                  <Button
+                    size="sm"
+                    className="font-semibold rounded-lg"
+                    style={{
+                      background: isTransparent
+                        ? "rgba(255,255,255,0.12)"
+                        : "hsl(var(--primary))",
+                      border: isTransparent
+                        ? "1px solid rgba(255,255,255,0.2)"
+                        : "none",
+                      color: "#fff",
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                </Link>
+              </div>
             )}
 
             {/* Mobile hamburger */}
@@ -314,11 +339,18 @@ const Navbar = () => {
                   </Button>
                 </Link>
               ) : (
-                <Link to="/login" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full rounded-xl font-semibold" size="lg">
-                    Sign In
-                  </Button>
-                </Link>
+                <div className="flex flex-col gap-3">
+                  <Link to="/my-orders" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full rounded-xl font-semibold border-white/20 hover:bg-white/5 text-white" size="lg">
+                      Guest Orders
+                    </Button>
+                  </Link>
+                  <Link to="/login" onClick={() => setMobileOpen(false)}>
+                    <Button className="w-full rounded-xl font-semibold" size="lg">
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
               )}
             </div>
           </motion.div>

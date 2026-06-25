@@ -76,7 +76,6 @@ const OrderTrackingPage = () => {
 
   const handleStatusChange = useCallback(
     (data: { status: string; estimatedTime?: number }) => {
-      console.log("[OrderTracking] Status changed:", data);
       setLiveStatus(data.status);
       if (data.estimatedTime) setEstimatedTime(data.estimatedTime);
       setLastUpdate(new Date());

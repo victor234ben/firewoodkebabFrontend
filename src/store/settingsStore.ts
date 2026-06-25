@@ -29,6 +29,7 @@ interface SettingsStore {
   restaurant: RestaurantInfo;
   isLoading: boolean;
   hasFetched: boolean;
+  fetchedAt?: number;
   fetch: () => Promise<void>;
 }
 
@@ -40,14 +41,17 @@ export const useSettingsStore = create<SettingsStore>()(
       hasFetched: false,
 
       fetch: async () => {
-        // Avoid re-fetching if already loaded (stale-while-revalidate pattern)
-        if (get().hasFetched) return;
+        const SETTINGS_TTL = 30 * 60 * 1000; // 30 min
+        const { hasFetched, fetchedAt } = get();
+        if (hasFetched && fetchedAt && Date.now() - fetchedAt < SETTINGS_TTL) return;
+
         set({ isLoading: true });
         try {
           const { data } = await settingsAPI.getPublic();
           set({
             restaurant: data.data.restaurant ?? {},
             hasFetched: true,
+            fetchedAt: Date.now(),
             isLoading: false,
           });
         } catch {
@@ -60,6 +64,7 @@ export const useSettingsStore = create<SettingsStore>()(
       partialize: (state) => ({
         restaurant: state.restaurant,
         hasFetched: state.hasFetched,
+        fetchedAt: state.fetchedAt,
       }),
     },
   ),
