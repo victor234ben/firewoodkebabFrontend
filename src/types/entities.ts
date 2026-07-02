@@ -83,7 +83,7 @@ export interface Order {
   couponCode?: string;
   status: OrderStatus;
   statusHistory: { status: string; updatedAt: string; note?: string }[];
-  paymentMethod: "stripe" | "cash";
+  paymentMethod: "stripe" | "cash" | "skytab";
   paymentStatus: PaymentStatus;
   paymentReference?: string;
   specialInstructions?: string;

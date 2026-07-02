@@ -169,7 +169,8 @@ export const useCartStore = create<CartStore>()(
       clearCart: async () => {
         try {
           // 1. Clear Zustand state immediately
-          set({ items: [], coupon: null });
+          set({ items: [], coupon: null, cartId: null });
+          localStorage.removeItem("cartId");
 
           // 2. Flag to skip the next syncFromServer()
           set({ skipNextSync: true });

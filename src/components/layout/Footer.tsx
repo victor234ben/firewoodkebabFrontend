@@ -24,12 +24,15 @@ const Footer = () => {
 
   // Convert openingHours object to array format for rendering
   const openingHours = restaurant.openingHours
-    ? Object.entries(restaurant.openingHours).map(([day, hours]) => ({
-        day,
-        display: hours.open
-          ? `${hours.startTime} - ${hours.endTime}`
-          : "Closed",
-      }))
+    ? Object.entries(restaurant.openingHours).map(([day, hours]: [string, any]) => {
+        const isOpen = hours.isClosed !== undefined ? !hours.isClosed : (hours.open === true || typeof hours.open === 'string');
+        const start = hours.startTime || (typeof hours.open === 'string' ? hours.open : '');
+        const end = hours.endTime || hours.close || '';
+        return {
+          day,
+          display: isOpen && start && end ? `${start} - ${end}` : "Closed",
+        };
+      })
     : [];
 
   return (

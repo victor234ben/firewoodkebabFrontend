@@ -140,7 +140,7 @@ export const useValidateCheckout = () =>
       if (data.tipAmount < 0) {
         throw new Error("Tip cannot be negative");
       }
-      if (data.paymentMethod === "stripe" && data.deliveryFee < 0) {
+      if (data.paymentMethod !== "cash" && data.deliveryFee < 0) {
         throw new Error("Invalid delivery fee");
       }
       return true;
@@ -154,7 +154,7 @@ export const useCreateOrder = () => {
       if (!data.deliveryType) {
         throw new Error("Delivery type is required");
       }
-      if (data.paymentMethod === "stripe" && !data.guestEmail && !data.userId) {
+      if (data.paymentMethod !== "cash" && !data.guestEmail && !data.userId) {
         throw new Error("Email is required for card payment");
       }
       if ((data.tipAmount ?? 0) < 0) {
@@ -252,7 +252,7 @@ export const useProfile = () =>
     queryKey: ["profile"],
     queryFn: async () => {
       const { data } = await userAPI.getProfile();
-      return data.data.user;
+      return data.data;
     },
     staleTime: 60 * 1000,
   });

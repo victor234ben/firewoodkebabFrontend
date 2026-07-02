@@ -59,13 +59,16 @@ const ContactPage = () => {
   ].filter((item) => item.value);
 
   const openingHours = restaurant.openingHours
-    ? Object.entries(restaurant.openingHours).map(([day, hours]) => ({
-        day: day.charAt(0).toUpperCase() + day.slice(1),
-        display: hours.open
-          ? `${hours.startTime} - ${hours.endTime}`
-          : "Closed",
-        closed: !hours.open,
-      }))
+    ? Object.entries(restaurant.openingHours).map(([day, hours]: [string, any]) => {
+        const isOpen = hours.isClosed !== undefined ? !hours.isClosed : (hours.open === true || typeof hours.open === 'string');
+        const start = hours.startTime || (typeof hours.open === 'string' ? hours.open : '');
+        const end = hours.endTime || hours.close || '';
+        return {
+          day: day.charAt(0).toUpperCase() + day.slice(1),
+          display: isOpen && start && end ? `${start} - ${end}` : "Closed",
+          closed: !isOpen,
+        };
+      })
     : [];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

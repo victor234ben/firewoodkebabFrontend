@@ -72,7 +72,7 @@ export interface CreateOrderDTO {
   guestPhone?: string;
   guestName?: string;
   specialInstructions?: string;
-  paymentMethod: "cash" | "stripe";
+  paymentMethod: "cash" | "stripe" | "skytab";
   tipAmount?: number;
   userId?: string;
   cartId?: string;
@@ -120,7 +120,7 @@ export interface InitPaymentDTO {
   orderId: string;
   amount: number;
   email: string;
-  paymentMethod: "cash" | "stripe";
+  paymentMethod: "cash" | "stripe" | "skytab";
 }
 
 export interface NotificationPrefsDTO {

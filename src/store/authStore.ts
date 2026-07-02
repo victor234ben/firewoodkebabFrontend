@@ -115,7 +115,7 @@ export const useAuthStore = create<AuthStore>()(
  
       updateProfile: async (profileData) => {
         const { data } = await userAPI.updateProfile(profileData);
-        set({ user: data.data.user });
+        set({ user: data.data });
         console.info("Profile updated");
       },
 
@@ -206,3 +206,44 @@ export const useAuthStore = create<AuthStore>()(
     },
   ),
 );
+
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.key === "auth-storage") {
+      try {
+        const parsed = JSON.parse(event.newValue || "{}");
+        const state = parsed?.state;
+        const currentAccessToken = useAuthStore.getState().accessToken;
+
+        if (!state || !state.accessToken) {
+          // Logout occurred in another tab
+          if (currentAccessToken) {
+            useAuthStore.setState({ user: null, accessToken: null, refreshToken: null });
+            useCartStore.getState().clearCart();
+          }
+        } else {
+          // Login/Update occurred in another tab
+          if (!currentAccessToken && state.accessToken) {
+            useAuthStore.setState({
+              user: state.user || null,
+              accessToken: state.accessToken || null,
+              refreshToken: state.refreshToken || null,
+            });
+            useCartStore.getState().syncFromServer();
+          } else if (state.user) {
+            // Profile update sync
+            useAuthStore.setState({ user: state.user });
+          }
+        }
+      } catch (e) {
+        console.error("Error parsing auth-storage update from other tab:", e);
+      }
+    }
+    if (event.key === "accessToken" && !event.newValue) {
+      if (useAuthStore.getState().accessToken) {
+        useAuthStore.setState({ user: null, accessToken: null, refreshToken: null });
+        useCartStore.getState().clearCart();
+      }
+    }
+  });
+}

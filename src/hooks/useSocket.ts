@@ -76,16 +76,21 @@ export function useSocketInit(token: string | null, userId: string | null) {
 export function useOrderSocket(
   orderId: string | undefined,
   onStatusChange: (data: { status: string; estimatedTime?: number }) => void,
+  guestToken?: string,
 ) {
   const activeRoomRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!orderId || !socket?.connected) return;
 
-    socket.emit("order:track", orderId);
+    socket.emit("order:track", { orderId, guestToken });
     activeRoomRef.current = `order-${orderId}`;
 
     const handleOrderUpdate = (data: any) => {
+      if (data.orderId !== orderId) {
+        return; // filter to this order's events only
+      }
+
       onStatusChange({
         status: data.status,
         estimatedTime: data.estimatedTime,
@@ -113,7 +118,7 @@ export function useOrderSocket(
       }
       activeRoomRef.current = null;
     };
-  }, [orderId, onStatusChange]);
+  }, [orderId, onStatusChange, guestToken]);
 }
 
 export function useNotifications(

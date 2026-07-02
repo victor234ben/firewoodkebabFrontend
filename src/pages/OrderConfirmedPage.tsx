@@ -13,6 +13,7 @@ import { formatPrice } from "@/utils/helpers";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import client from "@/services/api/client";
+import { paymentAPI } from "@/services/api/payment";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -20,9 +21,12 @@ const OrderConfirmedPage = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  // Present when the customer paid with SkyTab (Shift4's embedded Checkout overlay
+  // hands back a chargeId via its JS success callback - see CheckoutPage.tsx).
+  const chargeId = searchParams.get("charge_id");
 
   const { data: order, isLoading, refetch } = useOrder(id || "");
-  const [isVerifying, setIsVerifying] = useState(!!sessionId);
+  const [isVerifying, setIsVerifying] = useState(!!sessionId || !!chargeId);
   const [verificationError, setVerificationError] = useState<string | null>(
     null,
   );
@@ -93,6 +97,39 @@ const OrderConfirmedPage = () => {
 
     verifyPayment();
   }, [sessionId, refetch]);
+
+  // Verify payment if charge_id is in URL (SkyTab)
+  useEffect(() => {
+    if (!chargeId) return;
+
+    const confirmCharge = async () => {
+      try {
+        setIsVerifying(true);
+        setVerificationError(null);
+
+        const response = await paymentAPI.confirmSkytabCharge(chargeId);
+
+        if (response.data?.success) {
+          toast.success("Payment verified successfully!");
+          await refetch();
+        } else {
+          setVerificationError("Payment verification status unclear");
+          toast.info("Please check your email for order confirmation");
+        }
+      } catch (error: any) {
+        const errorMsg =
+          error.response?.data?.message ||
+          "Failed to verify payment. Your order is being processed.";
+        setVerificationError(errorMsg);
+        toast.error(errorMsg);
+        await refetch();
+      } finally {
+        setIsVerifying(false);
+      }
+    };
+
+    confirmCharge();
+  }, [chargeId, refetch]);
 
   return (
     <main className="pt-20 md:pt-40 section-padding">

@@ -83,6 +83,8 @@ const OrderTrackingPage = () => {
     [],
   );
 
+  useOrderSocket(order?._id, handleStatusChange, guestToken);
+
   const { restaurant } = useSettingsStore();
 
   const currentStatus =

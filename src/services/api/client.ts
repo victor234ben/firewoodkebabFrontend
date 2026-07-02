@@ -11,7 +11,7 @@ const client = axios.create({
 // ── Request: attach access token AND cartId ──────────────────────────────────
 client.interceptors.request.use((config) => {
   // ✅ ADD AUTHORIZATION HEADER FOR AUTHENTICATED USERS
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = useAuthStore.getState().accessToken;
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
     console.debug(`[API] Authorization header added`);
@@ -83,7 +83,7 @@ client.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const refreshToken = localStorage.getItem("refreshToken");
+      const refreshToken = useAuthStore.getState().refreshToken;
       if (!refreshToken) throw new Error("No refresh token");
 
       const { data } = await axios.post(

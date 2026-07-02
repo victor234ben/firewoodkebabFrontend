@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ClipboardList, Clock, ArrowRight, Mail, LogIn, ShoppingBag, Loader2 } from "lucide-react";
+import {
+  ClipboardList,
+  Clock,
+  ArrowRight,
+  Mail,
+  LogIn,
+  ShoppingBag,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/utils/helpers";
 import { useGuestOrder } from "@/hooks/useApi";
@@ -27,11 +35,26 @@ const GuestOrderRow = ({ orderInfo }: { orderInfo: LocalGuestOrder }) => {
 
   const statusColors: Record<string, { bg: string; text: string }> = {
     loading: { bg: "bg-white/5 border-white/10", text: "text-white/50" },
-    pending: { bg: "bg-amber-500/10 border-amber-500/30", text: "text-amber-500" },
-    confirmed: { bg: "bg-blue-500/10 border-blue-500/30", text: "text-blue-500" },
-    preparing: { bg: "bg-purple-500/10 border-purple-500/30", text: "text-purple-500" },
-    out_for_delivery: { bg: "bg-indigo-500/10 border-indigo-500/30", text: "text-indigo-500" },
-    delivered: { bg: "bg-green-500/10 border-green-500/30", text: "text-green-500" },
+    pending: {
+      bg: "bg-amber-500/10 border-amber-500/30",
+      text: "text-amber-500",
+    },
+    confirmed: {
+      bg: "bg-blue-500/10 border-blue-500/30",
+      text: "text-blue-500",
+    },
+    preparing: {
+      bg: "bg-purple-500/10 border-purple-500/30",
+      text: "text-purple-500",
+    },
+    out_for_delivery: {
+      bg: "bg-indigo-500/10 border-indigo-500/30",
+      text: "text-indigo-500",
+    },
+    delivered: {
+      bg: "bg-green-500/10 border-green-500/30",
+      text: "text-green-500",
+    },
     cancelled: { bg: "bg-red-500/10 border-red-500/30", text: "text-red-500" },
     failed: { bg: "bg-red-500/10 border-red-500/30", text: "text-red-500" },
   };
@@ -54,7 +77,9 @@ const GuestOrderRow = ({ orderInfo }: { orderInfo: LocalGuestOrder }) => {
               Loading status
             </span>
           ) : (
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${statusStyle.bg} ${statusStyle.text} capitalize`}>
+            <span
+              className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${statusStyle.bg} ${statusStyle.text} capitalize`}
+            >
               {status === "out_for_delivery" ? "On the Way" : status}
             </span>
           )}
@@ -62,8 +87,10 @@ const GuestOrderRow = ({ orderInfo }: { orderInfo: LocalGuestOrder }) => {
         <p className="text-xs text-white/50">
           {isDateValid ? (
             <>
-              Placed on {parsedDate.toLocaleDateString("en-US", { dateStyle: "medium" })}{" "}
-              at {parsedDate.toLocaleTimeString("en-US", { timeStyle: "short" })}
+              Placed on{" "}
+              {parsedDate.toLocaleDateString("en-US", { dateStyle: "medium" })}{" "}
+              at{" "}
+              {parsedDate.toLocaleTimeString("en-US", { timeStyle: "short" })}
             </>
           ) : (
             "Placed recently"
@@ -74,7 +101,10 @@ const GuestOrderRow = ({ orderInfo }: { orderInfo: LocalGuestOrder }) => {
         {liveOrder?.items && liveOrder.items.length > 0 && (
           <div className="mt-3 pt-2.5 border-t border-white/5 flex flex-wrap gap-2 text-xs text-white/70">
             {liveOrder.items.map((item: any, idx: number) => (
-              <span key={item._id || idx} className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+              <span
+                key={item._id || idx}
+                className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5"
+              >
                 {item.quantity}× {item.menuItemName}
               </span>
             ))}
@@ -86,17 +116,24 @@ const GuestOrderRow = ({ orderInfo }: { orderInfo: LocalGuestOrder }) => {
         <p className="text-xs">
           Payment:{" "}
           <span className="text-white capitalize">
-            {paymentMethod === "stripe" ? "Card" : paymentMethod === "cash" ? "Cash" : paymentMethod || "Unknown"}
+            {paymentMethod === "stripe"
+              ? "Card"
+              : paymentMethod === "skytab"
+                ? "SkyTab"
+                : paymentMethod === "cash"
+                  ? "Cash"
+                  : paymentMethod || "Unknown"}
           </span>
         </p>
-        <p className="font-bold text-base text-primary">
-          {formatPrice(total)}
-        </p>
+        <p className="font-bold text-base text-primary">{formatPrice(total)}</p>
       </div>
 
       <div className="w-full md:w-auto">
         <Link to={`/track/${orderInfo.guestToken}`}>
-          <Button size="sm" className="w-full md:w-auto rounded-xl gap-2 font-semibold">
+          <Button
+            size="sm"
+            className="w-full md:w-auto rounded-xl gap-2 font-semibold"
+          >
             <Clock className="w-4 h-4" />
             Track Live
           </Button>
@@ -116,7 +153,8 @@ const MyOrdersPage = () => {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
           const sorted = parsed.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           );
           setOrders(sorted);
         }
@@ -130,7 +168,8 @@ const MyOrdersPage = () => {
     <main
       className="min-h-screen text-white"
       style={{
-        background: "linear-gradient(160deg, #1a1108 0%, #0e0d0b 50%, #1a1208 100%)",
+        background:
+          "linear-gradient(160deg, #1a1108 0%, #0e0d0b 50%, #1a1208 100%)",
       }}
     >
       {/* Hero Section */}
@@ -138,7 +177,8 @@ const MyOrdersPage = () => {
         <div
           className="absolute -top-32 right-0 w-[600px] h-[600px] rounded-full pointer-events-none blur-3xl"
           style={{
-            background: "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 65%)",
+            background:
+              "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 65%)",
           }}
         />
         <div className="container-wide relative z-10">
@@ -165,8 +205,8 @@ const MyOrdersPage = () => {
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-white">No orders yet</h2>
                 <p className="text-white/50 max-w-sm mx-auto text-sm leading-relaxed">
-                  Looks like you haven't placed any orders here — or you may be on a different device.
-                  Sign in to see your full history.
+                  Looks like you haven't placed any orders here — or you may be
+                  on a different device. Sign in to see your full history.
                 </p>
               </div>
 
@@ -192,13 +232,18 @@ const MyOrdersPage = () => {
               {/* Quiet email tip */}
               <p className="text-xs text-white/30 flex items-center justify-center gap-1.5 pt-2">
                 <Mail className="w-3.5 h-3.5 shrink-0" />
-                Can't find your order? Check your confirmation email for a tracking link.
+                Can't find your order? Check your confirmation email for a
+                tracking link.
               </p>
 
               {/* Browse CTA */}
               <div className="pt-6 border-t border-white/5">
                 <Link to="/menu">
-                  <Button size="lg" variant="ghost" className="rounded-full px-8 font-semibold text-white/60 hover:text-white">
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    className="rounded-full px-8 font-semibold text-white/60 hover:text-white"
+                  >
                     <ShoppingBag className="w-4 h-4 mr-2" />
                     Browse Menu
                   </Button>

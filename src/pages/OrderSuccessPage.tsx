@@ -150,7 +150,9 @@ const OrderSuccessPage = () => {
               <span className="font-medium text-foreground capitalize">
                 {orderData.paymentMethod === 'stripe'
                   ? 'Card Payment'
-                  : 'Cash on Delivery'}
+                  : orderData.paymentMethod === 'skytab'
+                    ? 'SkyTab'
+                    : 'Cash on Delivery'}
               </span>
             </div>
             <div className="flex justify-between">

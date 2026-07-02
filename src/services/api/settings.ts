@@ -4,6 +4,8 @@ interface PaymentOptions {
   tipsEnabled: boolean;
   tipPercentages: number[];
   cashOnDeliveryEnabled: boolean;
+  skytabEnabled: boolean;
+  skytabPublicKey?: string;
   currency: string;
 }
 

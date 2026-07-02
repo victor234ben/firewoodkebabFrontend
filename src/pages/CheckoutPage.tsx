@@ -27,7 +27,36 @@ import { toast } from "sonner";
 import type { CreateOrderDTO } from "@/types";
 import { TipSelector } from "@/components/checkout.ts/TipSelector";
 import { settingsAPI } from "@/services/api/settings";
+import { paymentAPI } from "@/services/api/payment";
 import { useQuery } from "@tanstack/react-query";
+
+// Shift4's embedded Checkout overlay (SkyTab) is opened via a small global JS object
+// loaded from checkout.js - see https://dev.shift4.com/docs/checkout. Unlike Stripe,
+// there is no redirect: the overlay stays on this page and success/error fire as callbacks.
+declare global {
+  interface Window {
+    Shift4Checkout?: {
+      key: string;
+      success: (result: { chargeId?: string; error?: string }) => void;
+      error: (errorMessage: string) => void;
+      open: (opts: { clientSecret: string }) => void;
+    };
+  }
+}
+
+let shift4ScriptPromise: Promise<void> | null = null;
+function loadShift4Checkout(): Promise<void> {
+  if (window.Shift4Checkout) return Promise.resolve();
+  if (shift4ScriptPromise) return shift4ScriptPromise;
+  shift4ScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://dev.shift4.com/checkout.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load SkyTab checkout"));
+    document.body.appendChild(script);
+  });
+  return shift4ScriptPromise;
+}
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -45,9 +74,9 @@ const CheckoutPage = () => {
   const deliveryStore = useDeliveryStore();
   const createOrderMutation = useCreateOrder();
 
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "stripe">(
-    "stripe",
-  );
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "stripe" | "skytab"
+  >("stripe");
   const [instructions, setInstructions] = useState("");
   const [showSummary, setShowSummary] = useState(true);
 
@@ -59,6 +88,14 @@ const CheckoutPage = () => {
     queryKey: ["payment-options"],
     queryFn: () => settingsAPI.getPaymentOptions(),
   });
+
+  useEffect(() => {
+    if (paymentOptions?.skytabEnabled) {
+      loadShift4Checkout().catch(() =>
+        toast.error("Could not load SkyTab payment. Please refresh."),
+      );
+    }
+  }, [paymentOptions?.skytabEnabled]);
   const { data: deliveryZoneData } = useQuery({
     queryKey: ["deliveryZone", deliveryStore.locationData?.zipCode],
     queryFn: () =>
@@ -152,7 +189,8 @@ const CheckoutPage = () => {
       toast.error("Please fill in your contact details");
       return;
     }
-    if (paymentMethod === "stripe" && !guestEmail) {
+    const cardEmail = user ? user.email : guestEmail;
+    if (paymentMethod !== "cash" && !cardEmail) {
       toast.error("Email is required for card payment");
       return;
     }
@@ -198,10 +236,38 @@ const CheckoutPage = () => {
       const { data } = await createOrderMutation.mutateAsync(orderData);
       const order = data.data.order;
       const paymentLink = data.data.paymentLink;
+      const clientSecret = data.data.clientSecret;
+      const skytabPublicKey = data.data.publicKey || paymentOptions?.skytabPublicKey;
 
       if (paymentLink) {
-        // Card payment - redirect to Stripe
+        // Stripe - redirect to hosted Checkout page
         window.location.href = paymentLink;
+        return;
+      }
+
+      if (paymentMethod === "skytab" && clientSecret) {
+        // SkyTab (Shift4) - open embedded Checkout overlay in-page, no redirect.
+        // See loadShift4Checkout() above: checkout.js exposes window.Shift4Checkout.
+        try {
+          await loadShift4Checkout();
+        } catch {
+          toast.error("Could not load SkyTab payment. Please try again.");
+          return;
+        }
+        if (!window.Shift4Checkout || !skytabPublicKey) {
+          toast.error("SkyTab payment is not available right now.");
+          return;
+        }
+        window.Shift4Checkout.key = skytabPublicKey;
+        window.Shift4Checkout.success = (result) => {
+          navigate(`/order/${order.id}/confirmed?charge_id=${result.chargeId}`, {
+            replace: true,
+          });
+        };
+        window.Shift4Checkout.error = (errorMessage) => {
+          toast.error(errorMessage || "Payment failed. Please try again.");
+        };
+        window.Shift4Checkout.open({ clientSecret });
         return;
       }
 
@@ -720,11 +786,11 @@ const CheckoutPage = () => {
                 <RadioGroup
                   value={paymentMethod}
                   onValueChange={(v) =>
-                    setPaymentMethod(v as "cash" | "stripe")
+                    setPaymentMethod(v as "cash" | "stripe" | "skytab")
                   }
                   className="space-y-3"
                 >
-                  {(["stripe", ...(paymentOptions?.cashOnDeliveryEnabled ? ["cash"] : [])] as const).map((m) => (
+                  {(["stripe", ...(paymentOptions?.skytabEnabled ? ["skytab"] : []), ...(paymentOptions?.cashOnDeliveryEnabled ? ["cash"] : [])] as const).map((m) => (
                     <motion.label
                       key={m}
                       whileHover={{ y: -2 }}
@@ -736,7 +802,11 @@ const CheckoutPage = () => {
                     >
                       <RadioGroupItem value={m} />
                       <span className="font-semibold text-foreground capitalize">
-                        {m === "stripe" ? "Card Payment" : "Cash on Delivery"}
+                        {m === "stripe"
+                          ? "Card Payment"
+                          : m === "skytab"
+                            ? "SkyTab"
+                            : "Cash on Delivery"}
                       </span>
                     </motion.label>
                   ))}
