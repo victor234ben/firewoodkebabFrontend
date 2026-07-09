@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
-import logoWhite from "@/assets/logo_white.png";
+import logoWhite from "@/assets/logo_new.png";
 import { APP_NAME } from "@/utils/constants";
 
 const PRIMARY = "#e8702a";

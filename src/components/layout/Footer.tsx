@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { APP_NAME, NAV_LINKS } from "@/utils/constants";
 import logoBlack from "@/assets/logo_black.png";
-import logoWhite from "@/assets/logo_white.png";
+import logoWhite from "@/assets/logo_new.png";
 import { useSettingsStore } from "@/store/settingsStore";
 
 const Footer = () => {

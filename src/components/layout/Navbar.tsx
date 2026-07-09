@@ -9,7 +9,7 @@ import { useScrolled } from "@/hooks/useUtilHooks";
 import { NAV_LINKS } from "@/utils/constants";
 import { useSettingsStore } from "@/store/settingsStore";
 import logoBlack from "@/assets/logo_black.png";
-import logoWhite from "@/assets/logo_white.png";
+import logoWhite from "@/assets/logo_new.png";
 import { useSeoStore } from "@/store/seoStore";
 
 const Navbar = () => {

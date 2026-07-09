@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import logoWhite from "@/assets/logo_white.png";
+import logoWhite from "@/assets/logo_new.png";
 import { Button } from "@/components/ui/button";
 import { Flame } from "lucide-react";
 
