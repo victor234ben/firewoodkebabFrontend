@@ -83,7 +83,7 @@ const Navbar = () => {
               // src={isTransparent ? logoWhite : logoBlack}
               src={logoWhite}
               alt="Firewood Kebab"
-              className="h-[84px] w-auto block dark:hidden transition-opacity duration-200"
+              className="h-[50px] md:h-[84px] w-auto block dark:hidden transition-opacity duration-200"
               height={52}
             />
             {/* Dark mode — always white */}
