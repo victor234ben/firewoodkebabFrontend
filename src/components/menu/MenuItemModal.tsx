@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Minus, Plus, Star, Flame, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cartStore";
+import { useCateringStore } from "@/store/cateringStore";
 import { formatPrice } from "@/utils/helpers";
 import type { MenuItem } from "@/types";
 import { toast } from "sonner";
@@ -10,9 +11,10 @@ import { toast } from "sonner";
 interface MenuItemModalProps {
   item: MenuItem;
   onClose: () => void;
+  isCatering?: boolean;
 }
 
-const MenuItemModal = ({ item, onClose }: MenuItemModalProps) => {
+const MenuItemModal = ({ item, onClose, isCatering }: MenuItemModalProps) => {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedVariants, setSelectedVariants] = useState<
@@ -28,7 +30,9 @@ const MenuItemModal = ({ item, onClose }: MenuItemModalProps) => {
     return defaults;
   });
   const [notes, setNotes] = useState("");
-  const addItem = useCartStore((s) => s.addItem);
+  
+  const addToCart = useCartStore((s) => s.addItem);
+  const addToCatering = useCateringStore((s) => s.addItem);
 
   const variantCost = Object.values(selectedVariants).reduce(
     (s, v) => s + v.additionalPrice,
@@ -37,7 +41,7 @@ const MenuItemModal = ({ item, onClose }: MenuItemModalProps) => {
   const itemTotal = (item.price + variantCost) * quantity;
 
   const handleAdd = () => {
-    addItem({
+    const payload = {
       menuItemId: item._id,
       name: item.name,
       quantity,
@@ -49,8 +53,16 @@ const MenuItemModal = ({ item, onClose }: MenuItemModalProps) => {
         additionalPrice: opt.additionalPrice,
       })),
       notes: notes || undefined,
-    });
-    toast.success(`${item.name} added to cart!`);
+    };
+
+    if (isCatering) {
+      addToCatering(payload);
+      toast.success(`${item.name} added to quote!`);
+    } else {
+      addToCart(payload);
+      toast.success(`${item.name} added to cart!`);
+    }
+    
     onClose();
   };
 
@@ -79,7 +91,7 @@ const MenuItemModal = ({ item, onClose }: MenuItemModalProps) => {
           <img
             src={item.image}
             alt={item.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl"
           />
           
           {/* Premium Dark Overlay */}

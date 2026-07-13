@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   UtensilsCrossed,
   Users,
@@ -7,7 +7,6 @@ import {
   Send,
   Loader2,
   Star,
-  Plus,
   Flame,
   Award,
   Heart,
@@ -19,8 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useMenuItems } from "@/hooks/useApi";
-import { useCartStore } from "@/store/cartStore";
-import { formatPrice } from "@/utils/helpers";
 import { APP_NAME } from "@/utils/constants";
 import { toast } from "sonner";
 import type { MenuItem } from "@/types";
@@ -29,22 +26,26 @@ import { contactAPI } from "@/services/api/contactAPI";
 import client from "@/services/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
+import CateringItemCard from "@/components/catering/CateringItemCard";
+import CateringSummary from "@/components/catering/CateringSummary";
+import { useCateringStore } from "@/store/cateringStore";
+import cateringBg from "@/assets/catering-bg.jpg";
 
 const features = [
   {
-    icon: UtensilsCrossed,
+    icon: "UtensilsCrossed",
     title: "Custom Menus",
     description:
       "Tailored menus designed for your event, from intimate gatherings to grand celebrations.",
   },
   {
-    icon: Users,
+    icon: "Users",
     title: "Any Party Size",
     description:
       "We cater events from 20 to 500+ guests with the same attention to detail.",
   },
   {
-    icon: Calendar,
+    icon: "Calendar",
     title: "Flexible Scheduling",
     description: "Book weeks in advance or let us handle last-minute requests.",
   },
@@ -56,10 +57,12 @@ const CateringPage = () => {
 
   const { data: cateringData, isLoading: menuLoading } = useMenuItems({
     isCatering: true,
-    limit: 20,
+    limit: 100, // Make sure we get all catering items
   });
   const cateringItems = cateringData?.items || [];
-  const addItem = useCartStore((s) => s.addItem);
+  
+  const { items: cartItems, clearCart } = useCateringStore();
+
   const { data: seoData } = useQuery({
     queryKey: ["seo", "catering"],
     queryFn: () => client.get("/public/seo/catering").then((r) => r.data.data),
@@ -86,13 +89,16 @@ const CateringPage = () => {
     contentData?.catering?.heroText ||
     "Bring the authentic heat of firewood grilling to your event. From intimate gatherings to grand celebrations, we deliver flame-kissed perfection every time.";
 
-  // Falls back to hardcoded array if CMS has no features saved yet
   const cmsFeatures = contentData?.catering?.features;
   const activeFeatures =
     cmsFeatures && cmsFeatures.length > 0 ? cmsFeatures : features;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (cartItems.length === 0) {
+      toast.error("Please add items to your catering menu before submitting.");
+      return;
+    }
     setLoading(true);
     const form = e.target as HTMLFormElement;
     const get = (id: string) =>
@@ -106,11 +112,20 @@ const CateringPage = () => {
         eventDate: get("date"),
         eventTime: get("time"),
         details: get("details"),
+        items: cartItems.map(item => ({
+          menuItemId: item.menuItemId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          notes: item.notes,
+          variants: item.variants
+        }))
       });
-      toast.success("Inquiry sent! We'll be in touch soon.");
+      toast.success("Quote request sent! We'll be in touch soon.");
       form.reset();
+      clearCart();
     } catch {
-      toast.error("Failed to send inquiry. Please try again.");
+      toast.error("Failed to send request. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -118,16 +133,19 @@ const CateringPage = () => {
 
   const handleQuickAdd = (item: MenuItem) => {
     if (item.variants && item.variants.length > 0) {
+      // If it has variants, open the modal so they can configure it
       setSelectedItem(item);
     } else {
-      addItem({
+      // If no variants, just add 1 quantity directly using the store method
+      // which is already handled in CateringItemCard's plus button, but this acts as fallback
+      useCateringStore.getState().addItem({
         menuItemId: item._id,
         name: item.name,
         quantity: 1,
         price: item.price,
         image: item.image,
       });
-      toast.success(`${item.name} added to cart!`);
+      toast.success(`${item.name} added to quote!`);
     }
   };
 
@@ -148,7 +166,8 @@ const CateringPage = () => {
           </script>
         )}
       </Helmet>
-      {/* ── HERO SECTION (CINEMATIC UPGRADE) ── */}
+
+      {/* ── HERO SECTION ── */}
       <section
         className="relative pt-40 pb-20 overflow-hidden"
         style={{
@@ -156,7 +175,6 @@ const CateringPage = () => {
             "linear-gradient(160deg, #1a1108 0%, #0e0d0b 50%, #1a1208 100%)",
         }}
       >
-        {/* Dual flame glows for depth */}
         <div
           className="absolute -top-32 right-0 w-[600px] h-[600px] rounded-full pointer-events-none blur-3xl"
           style={{
@@ -173,7 +191,6 @@ const CateringPage = () => {
         />
 
         <div className="container-wide relative z-10 text-center max-w-3xl mx-auto">
-          {/* Eyebrow - premium */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -198,7 +215,6 @@ const CateringPage = () => {
             />
           </motion.div>
 
-          {/* Main heading - bolder, larger */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -212,7 +228,6 @@ const CateringPage = () => {
             {heroHeading}
           </motion.h1>
 
-          {/* Subheading - more descriptive */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -226,13 +241,12 @@ const CateringPage = () => {
             {heroText}
           </motion.p>
 
-          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <motion.a href="#quote" whileHover={{ y: -2 }}>
+            <motion.a href="#builder" whileHover={{ y: -2 }}>
               <Button
                 size="lg"
                 className="rounded-full px-12 h-12 font-semibold gap-2 text-base"
@@ -251,15 +265,15 @@ const CateringPage = () => {
                 }}
               >
                 <Flame className="w-4 h-4" />
-                Request a Quote
+                Build Your Quote
               </Button>
             </motion.a>
           </motion.div>
         </div>
       </section>
 
-      {/* ── FEATURE CARDS (PREMIUM) ── */}
-      <section className="py-16 md:py-24">
+      {/* ── FEATURE CARDS ── */}
+      <section className="py-16">
         <div className="container-wide">
           <div className="grid sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {activeFeatures.map((f, i) => {
@@ -290,7 +304,6 @@ const CateringPage = () => {
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
-                  {/* Icon box - enhanced */}
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300"
@@ -301,8 +314,6 @@ const CateringPage = () => {
                   >
                     <Icon className="w-7 h-7" />
                   </motion.div>
-
-                  {/* Content */}
                   <h3 className="font-display font-semibold text-base mb-3">
                     {f.title}
                   </h3>
@@ -319,544 +330,218 @@ const CateringPage = () => {
         </div>
       </section>
 
-      {/* ── CATERING MENU (PREMIUM CARDS) ── */}
-      {(cateringItems.length > 0 || menuLoading) && (
-        <section
-          className="py-16 md:py-24"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(255,128,0,0.03) 0%, rgba(255,128,0,0.02) 100%)",
-          }}
-        >
-          <div className="container-wide">
-            {/* Section header - enhanced */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mb-14 text-center"
-            >
-              <div className="flex items-center justify-center gap-3 mb-5">
-                <span
-                  className="block w-12 h-px"
-                  style={{ background: "hsl(var(--primary))" }}
-                />
-                <span
-                  className="text-[10px] font-bold tracking-[0.3em] uppercase"
-                  style={{
-                    color: "hsl(var(--primary))",
-                    fontFamily: "var(--font-body)",
-                  }}
-                >
-                  ✦ What We Serve
-                </span>
-                <span
-                  className="block w-12 h-px"
-                  style={{ background: "hsl(var(--primary))" }}
-                />
-              </div>
-              <h2
-                className="font-display font-black leading-tight mb-3"
-                style={{
-                  fontSize: "clamp(2rem, 4vw, 2.8rem)",
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Catering Menu
-              </h2>
-              <p
-                className="text-sm max-w-lg mx-auto"
-                style={{ color: "hsl(var(--muted-foreground))" }}
-              >
-                Premium fire-grilled dishes, expertly scaled for events of any
-                size
-              </p>
-            </motion.div>
-
-            {menuLoading ? (
-              <div className="flex justify-center py-20">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >
-                  <Loader2
-                    className="w-10 h-10"
-                    style={{ color: "hsl(var(--primary))" }}
-                  />
-                </motion.div>
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <AnimatePresence mode="popLayout">
-                  {cateringItems.map((item: MenuItem, i: number) => (
-                    <motion.div
-                      key={item._id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      viewport={{ once: true }}
-                      transition={{
-                        delay: Math.min(i * 0.07, 0.35),
-                        duration: 0.4,
-                      }}
-                      className="group flex flex-col rounded-2xl overflow-hidden cursor-pointer transition-all duration-300"
-                      style={{
-                        background: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        boxShadow: "var(--shadow-card)",
-                      }}
-                      onClick={() => setSelectedItem(item)}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow =
-                          "0 20px 40px rgba(255,128,0,0.15)";
-                        e.currentTarget.style.transform = "translateY(-8px)";
-                        e.currentTarget.style.borderColor =
-                          "hsl(var(--primary) / 0.4)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = "var(--shadow-card)";
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.borderColor =
-                          "hsl(var(--border))";
-                      }}
-                    >
-                      {/* Image with premium overlay */}
-                      <div
-                        className="aspect-[3/2] overflow-hidden relative group/image"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #1c1a16, #0e0d0b)",
-                        }}
-                      >
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-115"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-6xl">
-                            🍖
-                          </div>
-                        )}
-
-                        {/* Premium overlay gradient */}
-                        <div
-                          className="absolute inset-0 pointer-events-none"
-                          style={{
-                            background:
-                              "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.6) 100%)",
-                            opacity: 0.8,
-                          }}
-                        />
-
-                        {/* Spicy badge if applicable */}
-                        {item.isSpicy && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.1 }}
-                            className="absolute top-4 right-4 z-10 rounded-full px-3 py-1.5 backdrop-blur-md"
-                            style={{
-                              background: "rgba(239,68,68,0.2)",
-                              border: "1px solid rgba(239,68,68,0.5)",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.4rem",
-                            }}
-                          >
-                            <Flame
-                              className="w-3.5 h-3.5"
-                              style={{ color: "#ff6b6b" }}
-                            />
-                            <span
-                              className="text-xs font-semibold"
-                              style={{ color: "#ff6b6b" }}
-                            >
-                              Spicy
-                            </span>
-                          </motion.div>
-                        )}
-                      </div>
-
-                      {/* Body - premium spacing */}
-                      <div className="p-6 flex flex-col flex-1">
-                        {/* Rating */}
-                        {item.averageRating > 0 && (
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="flex items-center gap-1.5">
-                              <Star
-                                className="w-3.5 h-3.5"
-                                style={{
-                                  fill: "hsl(var(--warm-gold))",
-                                  color: "hsl(var(--warm-gold))",
-                                }}
-                              />
-                              <span className="text-xs font-bold">
-                                {item.averageRating.toFixed(1)}
-                              </span>
-                            </div>
-                            <span
-                              className="text-xs"
-                              style={{
-                                color: "hsl(var(--muted-foreground))",
-                              }}
-                            >
-                              ({item.reviewCount || 0})
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Name */}
-                        <h3 className="font-display font-bold text-base leading-snug mb-2.5 transition-colors group-hover:text-primary line-clamp-2">
-                          {item.name}
-                        </h3>
-
-                        {/* Description */}
-                        <p
-                          className="text-xs leading-relaxed line-clamp-2 flex-1 mb-5"
-                          style={{
-                            color: "hsl(var(--muted-foreground))",
-                          }}
-                        >
-                          {item.description}
-                        </p>
-
-                        {/* Price + Button */}
-                        <div className="flex items-center justify-between">
-                          <span
-                            className="font-black text-xl"
-                            style={{ color: "hsl(var(--primary))" }}
-                          >
-                            {formatPrice(item.price)}
-                          </span>
-
-                          {/* Add button - premium */}
-                          <motion.button
-                            whileHover={{ scale: 1.15 }}
-                            whileTap={{ scale: 0.95 }}
-                            aria-label={`Add ${item.name} to cart`}
-                            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-                            style={{
-                              background: "hsl(var(--primary))",
-                              color: "#fff",
-                              boxShadow: "0 4px 12px hsl(var(--primary) / 0.4)",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuickAdd(item);
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.boxShadow =
-                                "0 6px 20px hsl(var(--primary) / 0.6)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.boxShadow =
-                                "0 4px 12px hsl(var(--primary) / 0.4)";
-                            }}
-                          >
-                            <Plus className="w-5 h-5" strokeWidth={3} />
-                          </motion.button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* ── QUOTE FORM (PREMIUM) ── */}
-      <section id="quote" className="py-16 md:py-24">
-        <div className="container-wide max-w-2xl mx-auto">
+      {/* ── CATERING BUILDER ── */}
+      <section
+        id="builder"
+        className="py-16 md:py-24 relative text-white"
+        style={{
+          backgroundImage: `url(${cateringBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="container-wide relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            className="mb-14 text-center"
           >
-            {/* Section header - premium */}
-            <div className="text-center mb-12">
-              <div className="flex items-center justify-center gap-3 mb-5">
-                <span
-                  className="block w-12 h-px"
-                  style={{ background: "hsl(var(--primary))" }}
-                />
-                <span
-                  className="text-[10px] font-bold tracking-[0.3em] uppercase"
-                  style={{
-                    color: "hsl(var(--primary))",
-                    fontFamily: "var(--font-body)",
-                  }}
-                >
-                  ✦ Get Started
-                </span>
-                <span
-                  className="block w-12 h-px"
-                  style={{ background: "hsl(var(--primary))" }}
-                />
-              </div>
-              <h2
-                className="font-display font-black leading-tight mb-3"
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <span
+                className="block w-12 h-px"
+                style={{ background: "hsl(var(--primary))" }}
+              />
+              <span
+                className="text-[10px] font-bold tracking-[0.3em] uppercase"
                 style={{
-                  fontSize: "clamp(2rem, 4vw, 2.8rem)",
-                  letterSpacing: "-0.01em",
+                  color: "hsl(var(--primary))",
+                  fontFamily: "var(--font-body)",
                 }}
               >
-                Request a Quote
-              </h2>
-              <p
-                className="text-sm max-w-md mx-auto"
-                style={{ color: "hsl(var(--muted-foreground))" }}
-              >
-                Share your event details and we'll craft a custom proposal
-                within 24 hours
-              </p>
+                ✦ Build Your Event
+              </span>
+              <span
+                className="block w-12 h-px"
+                style={{ background: "hsl(var(--primary))" }}
+              />
             </div>
-
-            {/* Form card - premium styling */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="rounded-2xl p-8 md:p-12"
+            <h2
+              className="font-display font-black leading-tight mb-3"
               style={{
-                background: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                boxShadow: "0 16px 32px rgba(0,0,0,0.2)",
+                fontSize: "clamp(2rem, 4vw, 2.8rem)",
+                letterSpacing: "-0.01em",
               }}
             >
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name + Email row */}
-                <div className="grid sm:grid-cols-2 gap-5">
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 }}
-                    className="space-y-2.5"
-                  >
-                    <Label
-                      htmlFor="name"
-                      className="text-sm font-semibold block"
-                    >
-                      Your Name
-                    </Label>
-                    <Input
-                      id="name"
-                      placeholder="Full name"
-                      required
-                      className="rounded-xl h-11 transition-all"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid hsl(var(--border))",
-                      }}
-                    />
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="space-y-2.5"
-                  >
-                    <Label
-                      htmlFor="email"
-                      className="text-sm font-semibold block"
-                    >
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      required
-                      className="rounded-xl h-11 transition-all"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid hsl(var(--border))",
-                      }}
-                    />
-                  </motion.div>
-                </div>
-
-                {/* Phone + Guests row */}
-                <div className="grid sm:grid-cols-2 gap-5">
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    className="space-y-2.5"
-                  >
-                    <Label
-                      htmlFor="phone"
-                      className="text-sm font-semibold block"
-                    >
-                      Phone
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+1 (555) 000-0000"
-                      required
-                      className="rounded-xl h-11 transition-all"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid hsl(var(--border))",
-                      }}
-                    />
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="space-y-2.5"
-                  >
-                    <Label
-                      htmlFor="guests"
-                      className="text-sm font-semibold block"
-                    >
-                      Number of Guests
-                    </Label>
-                    <Input
-                      id="guests"
-                      type="number"
-                      min={10}
-                      placeholder="e.g. 100"
-                      required
-                      className="rounded-xl h-11 transition-all"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid hsl(var(--border))",
-                      }}
-                    />
-                  </motion.div>
-                </div>
-
-                {/* Date + Time row */}
-                <div className="grid sm:grid-cols-2 gap-5">
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.25 }}
-                    className="space-y-2.5"
-                  >
-                    <Label
-                      htmlFor="date"
-                      className="text-sm font-semibold block"
-                    >
-                      Event Date
-                    </Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      required
-                      className="rounded-xl h-11 transition-all"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid hsl(var(--border))",
-                      }}
-                    />
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="space-y-2.5"
-                  >
-                    <Label
-                      htmlFor="time"
-                      className="text-sm font-semibold block"
-                    >
-                      Event Time
-                    </Label>
-                    <Input
-                      id="time"
-                      type="time"
-                      required
-                      className="rounded-xl h-11 transition-all"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid hsl(var(--border))",
-                      }}
-                    />
-                  </motion.div>
-                </div>
-
-                {/* Details textarea */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35 }}
-                  className="space-y-2.5"
-                >
-                  <Label
-                    htmlFor="details"
-                    className="text-sm font-semibold block"
-                  >
-                    Event Details
-                  </Label>
-                  <Textarea
-                    id="details"
-                    placeholder="Tell us about your event — venue, dietary requirements, cuisine preferences..."
-                    rows={5}
-                    required
-                    className="rounded-xl resize-none transition-all"
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid hsl(var(--border))",
-                    }}
-                  />
-                </motion.div>
-
-                {/* Submit button - premium */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full rounded-xl h-12 font-semibold gap-2 text-base transition-all"
-                    style={{
-                      background: loading
-                        ? "hsl(var(--muted))"
-                        : "hsl(var(--primary))",
-                      color: "#fff",
-                      boxShadow: loading
-                        ? "none"
-                        : "0 6px 24px hsl(var(--primary) / 0.4)",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!loading) {
-                        e.currentTarget.style.boxShadow =
-                          "0 8px 32px hsl(var(--primary) / 0.55)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!loading) {
-                        e.currentTarget.style.boxShadow =
-                          "0 6px 24px hsl(var(--primary) / 0.4)";
-                      }
-                    }}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        Submit Inquiry
-                      </>
-                    )}
-                  </Button>
-                </motion.div>
-              </form>
-            </motion.div>
+              Catering Menu Builder
+            </h2>
+            <p className="text-sm max-w-lg mx-auto text-white/80">
+              Select your dishes, build your menu, and submit your quote details below.
+            </p>
           </motion.div>
+
+          {menuLoading ? (
+            <div className="flex justify-center py-20">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                <Loader2
+                  className="w-10 h-10"
+                  style={{ color: "hsl(var(--primary))" }}
+                />
+              </motion.div>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-[1fr,400px] gap-10 items-start">
+              {/* LEFT: Menu Grid */}
+              <div className="grid sm:grid-cols-2 gap-6 h-fit text-foreground">
+                {cateringItems.length > 0 ? (
+                  cateringItems.map((item: MenuItem) => (
+                    <CateringItemCard
+                      key={item._id}
+                      item={item}
+                      onQuickAdd={handleQuickAdd}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full py-20 text-center flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl border border-border/50">
+                    <UtensilsCrossed className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                    <h3 className="text-xl font-display font-semibold mb-2">No catering items found</h3>
+                    <p className="text-muted-foreground text-sm max-w-sm">
+                      We're currently updating our catering menu. Please check back later or contact us directly.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT: Sticky Summary & Quote Form */}
+              <div className="sticky top-24 space-y-6 text-foreground">
+                <CateringSummary />
+
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="rounded-2xl p-6 md:p-8"
+                  style={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    boxShadow: "0 16px 32px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <h3 className="font-display font-bold text-lg mb-6">Event Details</h3>
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-sm font-semibold">
+                        Your Name
+                      </Label>
+                      <Input
+                        id="name"
+                        placeholder="Full name"
+                        required
+                        className="rounded-xl"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-semibold">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                        className="rounded-xl"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-sm font-semibold">
+                          Phone
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="+1 (555) 000-0000"
+                          required
+                          className="rounded-xl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="guests" className="text-sm font-semibold">
+                          Guests
+                        </Label>
+                        <Input
+                          id="guests"
+                          type="number"
+                          min={10}
+                          placeholder="e.g. 100"
+                          required
+                          className="rounded-xl"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="date" className="text-sm font-semibold">
+                          Date
+                        </Label>
+                        <Input id="date" type="date" required className="rounded-xl" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="time" className="text-sm font-semibold">
+                          Time
+                        </Label>
+                        <Input id="time" type="time" required className="rounded-xl" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="details" className="text-sm font-semibold">
+                        Additional Details
+                      </Label>
+                      <Textarea
+                        id="details"
+                        placeholder="Venue, dietary requirements..."
+                        rows={3}
+                        className="rounded-xl resize-none"
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={loading || cartItems.length === 0}
+                      className="w-full rounded-xl h-12 font-semibold gap-2 text-base transition-all"
+                      style={{
+                        background: (loading || cartItems.length === 0)
+                          ? "hsl(var(--muted))"
+                          : "hsl(var(--primary))",
+                        color: "#fff",
+                      }}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          Submit Quote Request
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </motion.div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -864,6 +549,7 @@ const CateringPage = () => {
         <MenuItemModal
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
+          isCatering={true} // Add this prop if we need to distinguish
         />
       )}
     </main>
