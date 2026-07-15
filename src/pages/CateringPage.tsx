@@ -21,7 +21,7 @@ import { useMenuItems } from "@/hooks/useApi";
 import { APP_NAME } from "@/utils/constants";
 import { toast } from "sonner";
 import type { MenuItem } from "@/types";
-import MenuItemModal from "@/components/menu/MenuItemModal";
+
 import { contactAPI } from "@/services/api/contactAPI";
 import client from "@/services/api/client";
 import { useQuery } from "@tanstack/react-query";
@@ -53,7 +53,6 @@ const features = [
 
 const CateringPage = () => {
   const [loading, setLoading] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const { data: cateringData, isLoading: menuLoading } = useMenuItems({
     isCatering: true,
@@ -131,9 +130,6 @@ const CateringPage = () => {
     }
   };
 
-  const handleQuickAdd = (item: MenuItem) => {
-    setSelectedItem(item);
-  };
 
   return (
     <main
@@ -389,7 +385,6 @@ const CateringPage = () => {
                     <CateringItemCard
                       key={item._id}
                       item={item}
-                      onQuickAdd={handleQuickAdd}
                     />
                   ))
                 ) : (
@@ -535,15 +530,7 @@ const CateringPage = () => {
           )}
         </div>
       </section>
-      <AnimatePresence>
-        {selectedItem && (
-          <MenuItemModal
-            item={selectedItem}
-            onClose={() => setSelectedItem(null)}
-            isCatering={true}
-          />
-        )}
-      </AnimatePresence>
+
     </main>
   );
 };

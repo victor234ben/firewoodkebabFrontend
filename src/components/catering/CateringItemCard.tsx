@@ -7,21 +7,30 @@ import { Button } from "@/components/ui/button";
 
 interface CateringItemCardProps {
   item: MenuItem;
-  onQuickAdd: (item: MenuItem) => void;
 }
 
-const CateringItemCard = ({ item, onQuickAdd }: CateringItemCardProps) => {
+const CateringItemCard = ({ item }: CateringItemCardProps) => {
   const storeItems = useCateringStore((s) => s.items);
-  const updateQuantity = useCateringStore((s) => s.updateQuantity);
+  const addItem = useCateringStore((s) => s.addItem);
   const removeItem = useCateringStore((s) => s.removeItem);
 
   // Find if item is already in catering cart (ignoring variants for basic add/remove on card)
-  // For precise variant handling, they use the modal.
   const cartItem = storeItems.find((i) => i.menuItemId === item._id);
 
   const handleToggleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onQuickAdd(item);
+    if (cartItem) {
+      removeItem(cartItem.id);
+    } else {
+      addItem({
+        menuItemId: item._id,
+        name: item.name,
+        quantity: 1,
+        price: item.price || 0,
+        image: item.image,
+        variants: []
+      });
+    }
   };
 
   return (
@@ -41,7 +50,7 @@ const CateringItemCard = ({ item, onQuickAdd }: CateringItemCardProps) => {
           ? "0 8px 24px hsl(var(--primary)/0.15)"
           : "var(--shadow-card)",
       }}
-      onClick={() => onQuickAdd(item)}
+      onClick={handleToggleSelect}
       onMouseEnter={(e) => {
         if (!cartItem) {
           e.currentTarget.style.boxShadow = "0 20px 40px rgba(255,128,0,0.15)";
