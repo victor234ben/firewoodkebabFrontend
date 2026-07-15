@@ -19,24 +19,9 @@ const CateringItemCard = ({ item, onQuickAdd }: CateringItemCardProps) => {
   // For precise variant handling, they use the modal.
   const cartItem = storeItems.find((i) => i.menuItemId === item._id);
 
-  const handleIncrement = (e: React.MouseEvent) => {
+  const handleToggleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (cartItem) {
-      updateQuantity(cartItem.id, cartItem.quantity + 1);
-    } else {
-      onQuickAdd(item);
-    }
-  };
-
-  const handleDecrement = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (cartItem) {
-      if (cartItem.quantity > 1) {
-        updateQuantity(cartItem.id, cartItem.quantity - 1);
-      } else {
-        removeItem(cartItem.id);
-      }
-    }
+    onQuickAdd(item);
   };
 
   return (
@@ -152,51 +137,28 @@ const CateringItemCard = ({ item, onQuickAdd }: CateringItemCardProps) => {
           {item.description}
         </p>
 
-        <div className="flex items-center justify-between mt-auto">
-          <span
-            className="font-black text-xl"
-            style={{ color: "hsl(var(--primary))" }}
-          >
-            {formatPrice(item.price)}
-          </span>
-
+        <div className="flex items-center justify-end mt-auto">
           {cartItem ? (
-            <div className="flex items-center gap-3 bg-secondary rounded-full p-1 border border-border">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full hover:bg-background"
-                onClick={handleDecrement}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <span className="font-bold text-sm w-4 text-center">
-                {cartItem.quantity}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full hover:bg-background"
-                onClick={handleIncrement}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <motion.button
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label={`Add ${item.name} to catering`}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+            <Button
+              variant="default"
+              className="w-full gap-2 font-bold"
               style={{
                 background: "hsl(var(--primary))",
                 color: "#fff",
-                boxShadow: "0 4px 12px hsl(var(--primary) / 0.4)",
               }}
-              onClick={handleIncrement}
+              onClick={handleToggleSelect}
             >
-              <Plus className="w-5 h-5" strokeWidth={3} />
-            </motion.button>
+              Selected
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10 transition-colors"
+              onClick={handleToggleSelect}
+            >
+              <Plus className="w-4 h-4" />
+              Add to Quote
+            </Button>
           )}
         </div>
       </div>

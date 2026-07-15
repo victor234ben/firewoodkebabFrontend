@@ -87,11 +87,11 @@ const MenuItemModal = ({ item, onClose, isCatering }: MenuItemModalProps) => {
         className="fixed inset-4 md:inset-auto md:top-[5%] md:right-[5%] md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xl z-50 bg-gradient-to-br from-slate-900 via-slate-800 to-black rounded-3xl shadow-2xl shadow-orange-500/20 overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh] border border-orange-500/20"
       >
         {/* Image Section with Premium Styling */}
-        <div className="relative aspect-[16/9] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shrink-0 overflow-hidden group">
+        <div className="relative h-48 sm:h-56 md:h-64 lg:h-72 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shrink-0 overflow-hidden group">
           <img
             src={item.image}
             alt={item.name}
-            className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl"
+            className="w-full h-full object-contain p-2 sm:p-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-xl"
           />
           
           {/* Premium Dark Overlay */}

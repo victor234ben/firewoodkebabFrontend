@@ -208,4 +208,16 @@ export interface QuoteInquiryDTO {
   eventDate: string;
   eventTime: string;
   details: string;
+  items?: {
+    menuItemId: string;
+    name: string;
+    quantity: number;
+    price: number;
+    notes?: string;
+    variants?: {
+      groupName: string;
+      selectedOption: string;
+      additionalPrice: number;
+    }[];
+  }[];
 }

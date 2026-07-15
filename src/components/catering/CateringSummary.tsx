@@ -62,56 +62,16 @@ export const CateringSummary = () => {
                   <h4 className="font-semibold text-sm truncate pr-2">
                     {item.name}
                   </h4>
-                  <span className="font-bold text-sm shrink-0">
-                    {formatPrice(item.itemTotal)}
-                  </span>
                 </div>
-
-                {item.variants && item.variants.length > 0 && (
-                  <div className="text-xs text-muted-foreground mb-2">
-                    {item.variants.map((v, i) => (
-                      <span key={i}>
-                        {v.selectedOption}
-                        {i < item.variants!.length - 1 ? ", " : ""}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-2 bg-secondary rounded-full p-1 border border-border h-8">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-full hover:bg-background"
-                      onClick={() =>
-                        updateQuantity(item.id, item.quantity - 1)
-                      }
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="font-bold text-xs w-4 text-center">
-                      {item.quantity}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-full hover:bg-background"
-                      onClick={() =>
-                        updateQuantity(item.id, item.quantity + 1)
-                      }
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-
+                <div className="flex items-center justify-end mt-2">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
                     onClick={() => removeItem(item.id)}
                   >
                     <Trash2 className="h-4 w-4" />
+                    <span className="text-xs">Remove</span>
                   </Button>
                 </div>
               </div>
@@ -121,14 +81,8 @@ export const CateringSummary = () => {
       </div>
 
       <div className="p-6 bg-secondary/30 border-t border-border">
-        <div className="flex justify-between items-center mb-2 text-sm text-muted-foreground">
-          <span>Estimated Subtotal</span>
-          <span className="font-medium text-foreground">
-            {formatPrice(subtotal)}
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground mt-4 italic">
-          * Final pricing will be confirmed by our team after reviewing your request details.
+        <p className="text-xs text-muted-foreground italic">
+          * A dedicated catering manager will reach out to you with pricing details based on your guest count and selected menu items.
         </p>
       </div>
     </div>

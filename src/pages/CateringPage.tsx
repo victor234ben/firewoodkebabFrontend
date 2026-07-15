@@ -53,7 +53,6 @@ const features = [
 
 const CateringPage = () => {
   const [loading, setLoading] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const { data: cateringData, isLoading: menuLoading } = useMenuItems({
     isCatering: true,
@@ -132,17 +131,16 @@ const CateringPage = () => {
   };
 
   const handleQuickAdd = (item: MenuItem) => {
-    if (item.variants && item.variants.length > 0) {
-      // If it has variants, open the modal so they can configure it
-      setSelectedItem(item);
+    const isAdded = cartItems.some(i => i.menuItemId === item._id);
+    if (isAdded) {
+      useCateringStore.getState().removeItem(cartItems.find(i => i.menuItemId === item._id)!.id);
+      toast.info(`${item.name} removed from quote.`);
     } else {
-      // If no variants, just add 1 quantity directly using the store method
-      // which is already handled in CateringItemCard's plus button, but this acts as fallback
       useCateringStore.getState().addItem({
         menuItemId: item._id,
         name: item.name,
         quantity: 1,
-        price: item.price,
+        price: 0,
         image: item.image,
       });
       toast.success(`${item.name} added to quote!`);
@@ -440,6 +438,7 @@ const CateringPage = () => {
                       </Label>
                       <Input
                         id="name"
+                        name="name"
                         placeholder="Full name"
                         required
                         className="rounded-xl"
@@ -452,6 +451,7 @@ const CateringPage = () => {
                       </Label>
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="you@example.com"
                         required
@@ -466,6 +466,7 @@ const CateringPage = () => {
                         </Label>
                         <Input
                           id="phone"
+                          name="phone"
                           type="tel"
                           placeholder="+1 (555) 000-0000"
                           required
@@ -478,6 +479,7 @@ const CateringPage = () => {
                         </Label>
                         <Input
                           id="guests"
+                          name="guests"
                           type="number"
                           min={10}
                           placeholder="e.g. 100"
@@ -492,13 +494,13 @@ const CateringPage = () => {
                         <Label htmlFor="date" className="text-sm font-semibold">
                           Date
                         </Label>
-                        <Input id="date" type="date" required className="rounded-xl" />
+                        <Input id="date" name="date" type="date" required className="rounded-xl" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="time" className="text-sm font-semibold">
                           Time
                         </Label>
-                        <Input id="time" type="time" required className="rounded-xl" />
+                        <Input id="time" name="time" type="time" required className="rounded-xl" />
                       </div>
                     </div>
 
@@ -508,6 +510,7 @@ const CateringPage = () => {
                       </Label>
                       <Textarea
                         id="details"
+                        name="details"
                         placeholder="Venue, dietary requirements..."
                         rows={3}
                         className="rounded-xl resize-none"
@@ -545,13 +548,7 @@ const CateringPage = () => {
         </div>
       </section>
 
-      {selectedItem && (
-        <MenuItemModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-          isCatering={true} // Add this prop if we need to distinguish
-        />
-      )}
+      {/* Removed MenuItemModal for catering as it is no longer needed */}
     </main>
   );
 };
