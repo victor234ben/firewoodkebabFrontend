@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   UtensilsCrossed,
   Users,
@@ -53,6 +53,7 @@ const features = [
 
 const CateringPage = () => {
   const [loading, setLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
   const { data: cateringData, isLoading: menuLoading } = useMenuItems({
     isCatering: true,
@@ -131,20 +132,7 @@ const CateringPage = () => {
   };
 
   const handleQuickAdd = (item: MenuItem) => {
-    const isAdded = cartItems.some(i => i.menuItemId === item._id);
-    if (isAdded) {
-      useCateringStore.getState().removeItem(cartItems.find(i => i.menuItemId === item._id)!.id);
-      toast.info(`${item.name} removed from quote.`);
-    } else {
-      useCateringStore.getState().addItem({
-        menuItemId: item._id,
-        name: item.name,
-        quantity: 1,
-        price: 0,
-        image: item.image,
-      });
-      toast.success(`${item.name} added to quote!`);
-    }
+    setSelectedItem(item);
   };
 
   return (
@@ -547,8 +535,15 @@ const CateringPage = () => {
           )}
         </div>
       </section>
-
-      {/* Removed MenuItemModal for catering as it is no longer needed */}
+      <AnimatePresence>
+        {selectedItem && (
+          <MenuItemModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+            isCatering={true}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
 };

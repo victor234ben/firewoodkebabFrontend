@@ -274,7 +274,7 @@ const MenuItemModal = ({ item, onClose, isCatering }: MenuItemModalProps) => {
             onClick={handleAdd}
             className="flex-1 py-3 px-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2"
           >
-            Add to Cart — {formatPrice(itemTotal)}
+            {isCatering ? "Add to Quote" : "Add to Cart"} — {formatPrice(itemTotal)}
           </motion.button>
 
           {/* Wishlist Button */}
