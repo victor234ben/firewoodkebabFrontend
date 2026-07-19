@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { Star, Plus, Minus, Flame } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Minus, X, Flame } from "lucide-react";
 import type { MenuItem } from "@/types";
 import { formatPrice } from "@/utils/helpers";
 import { useCateringStore } from "@/store/cateringStore";
@@ -13,8 +14,8 @@ const CateringItemCard = ({ item }: CateringItemCardProps) => {
   const storeItems = useCateringStore((s) => s.items);
   const addItem = useCateringStore((s) => s.addItem);
   const removeItem = useCateringStore((s) => s.removeItem);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
-  // Find if item is already in catering cart (ignoring variants for basic add/remove on card)
   const cartItem = storeItems.find((i) => i.menuItemId === item._id);
 
   const handleToggleSelect = (e: React.MouseEvent) => {
@@ -34,144 +35,94 @@ const CateringItemCard = ({ item }: CateringItemCardProps) => {
   };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      viewport={{ once: true }}
-      className="group flex flex-col rounded-2xl overflow-hidden cursor-pointer transition-all duration-300"
-      style={{
-        background: "hsl(var(--card))",
-        border: cartItem
-          ? "2px solid hsl(var(--primary))"
-          : "1px solid hsl(var(--border))",
-        boxShadow: cartItem
-          ? "0 8px 24px hsl(var(--primary)/0.15)"
-          : "var(--shadow-card)",
-      }}
-      onClick={handleToggleSelect}
-      onMouseEnter={(e) => {
-        if (!cartItem) {
-          e.currentTarget.style.boxShadow = "0 20px 40px rgba(255,128,0,0.15)";
-          e.currentTarget.style.transform = "translateY(-8px)";
-          e.currentTarget.style.borderColor = "hsl(var(--primary) / 0.4)";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!cartItem) {
-          e.currentTarget.style.boxShadow = "var(--shadow-card)";
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.borderColor = "hsl(var(--border))";
-        }
-      }}
-    >
-      {/* Image with premium overlay */}
-      <div
-        className="aspect-[3/2] overflow-hidden relative group/image"
-        style={{
-          background: "linear-gradient(135deg, #1c1a16, #0e0d0b)",
-        }}
+    <>
+      <div 
+        className={`flex items-center gap-4 py-3 group cursor-pointer transition-colors hover:bg-white/5 rounded-xl px-2 w-full max-w-full overflow-hidden ${cartItem ? 'bg-primary/5' : ''}`}
+        onClick={handleToggleSelect}
       >
-        {item.image ? (
-          <img
-            src={item.image}
-            alt={item.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-115"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-6xl">
-            🍖
-          </div>
-        )}
-
-
-
-        {item.isSpicy && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="absolute top-4 right-4 z-10 rounded-full px-3 py-1.5 backdrop-blur-md"
-            style={{
-              background: "rgba(239,68,68,0.2)",
-              border: "1px solid rgba(239,68,68,0.5)",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
-          >
-            <Flame className="w-3.5 h-3.5" style={{ color: "#ff6b6b" }} />
-            <span
-              className="text-xs font-semibold"
-              style={{ color: "#ff6b6b" }}
-            >
-              Spicy
-            </span>
-          </motion.div>
-        )}
-      </div>
-
-      <div className="p-6 flex flex-col flex-1">
-        {item.averageRating > 0 && (
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex items-center gap-1.5">
-              <Star
-                className="w-3.5 h-3.5"
-                style={{
-                  fill: "hsl(var(--warm-gold))",
-                  color: "hsl(var(--warm-gold))",
-                }}
-              />
-              <span className="text-xs font-bold">
-                {item.averageRating.toFixed(1)}
-              </span>
-            </div>
-            <span
-              className="text-xs"
-              style={{ color: "hsl(var(--muted-foreground))" }}
-            >
-              ({item.reviewCount || 0})
-            </span>
-          </div>
-        )}
-
-        <h3 className="font-display font-bold text-base leading-snug mb-2.5 transition-colors group-hover:text-primary line-clamp-2">
-          {item.name}
-        </h3>
-
-        <p
-          className="text-xs leading-relaxed line-clamp-2 flex-1 mb-5"
-          style={{ color: "hsl(var(--muted-foreground))" }}
+        <div 
+          className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-[1.2rem] overflow-hidden relative shadow-md bg-white/5"
+          onClick={(e) => {
+            e.stopPropagation();
+            if(item.image) setIsImageModalOpen(true);
+          }}
         >
-          {item.description}
-        </p>
-
-        <div className="flex items-center justify-end mt-auto">
-          {cartItem ? (
-            <Button
-              variant="default"
-              className="w-full gap-2 font-bold"
-              style={{
-                background: "hsl(var(--primary))",
-                color: "#fff",
-              }}
-              onClick={handleToggleSelect}
-            >
-              Selected
-            </Button>
+          {item.image ? (
+            <img 
+              src={item.image} 
+              alt={item.name} 
+              className="w-full h-full object-contain p-1 transition-transform duration-500 group-hover:scale-110" 
+            />
           ) : (
-            <Button
-              variant="outline"
-              className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10 transition-colors"
-              onClick={handleToggleSelect}
-            >
-              <Plus className="w-4 h-4" />
-              Add to Quote
-            </Button>
+            <div className="w-full h-full flex items-center justify-center text-2xl">🍖</div>
+          )}
+          {item.isSpicy && (
+            <div className="absolute top-1 right-1 z-10 bg-red-500/20 backdrop-blur-md rounded-full p-1 border border-red-500/50">
+              <Flame className="w-3 h-3 text-red-400" />
+            </div>
           )}
         </div>
+        
+        <div className="flex-1 min-w-0 flex flex-col justify-center max-w-full overflow-hidden">
+          <div className="flex items-baseline justify-between gap-2 w-full max-w-full">
+            <h3 className="font-display font-semibold text-base sm:text-lg text-white truncate shrink-0 max-w-[50%]">
+              {item.name}
+            </h3>
+            
+            <div className="flex-1 min-w-[20px] border-b border-white/20 mx-1 relative -top-1" />
+            
+            <span className="font-display font-semibold text-[hsl(var(--warm-gold))] shrink-0 pl-1">
+              {formatPrice(item.price)}
+            </span>
+          </div>
+          
+          <p className="text-xs sm:text-sm text-white/60 line-clamp-2 mt-1 pr-2 leading-relaxed">
+            {item.description}
+          </p>
+        </div>
+        
+        <div className="shrink-0 flex items-center justify-center pl-1 sm:pl-2">
+           <button
+             className={`w-8 h-8 sm:w-9 sm:h-9 shrink-0 flex items-center justify-center rounded-full transition-all duration-300 ${
+               cartItem 
+                 ? 'bg-primary text-white shadow-[0_0_12px_hsl(var(--primary)/0.5)] hover:scale-105' 
+                 : 'bg-white text-black shadow-md hover:scale-105'
+             }`}
+             onClick={handleToggleSelect}
+           >
+             {cartItem ? <Minus className="w-4 h-4" strokeWidth={3} /> : <Plus className="w-4 h-4" strokeWidth={3} />}
+           </button>
+        </div>
       </div>
-    </motion.div>
+      
+      <AnimatePresence>
+        {isImageModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => { e.stopPropagation(); setIsImageModalOpen(false); }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-2xl w-full max-h-[85vh] rounded-3xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+              <button 
+                onClick={() => setIsImageModalOpen(false)}
+                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

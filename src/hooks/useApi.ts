@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { menuAPI } from "@/services/api/menu";
 import { ordersAPI } from "@/services/api/orders";
 import { userAPI } from "@/services/api/user";
@@ -40,6 +40,23 @@ export const useMenuItems = (params?: MenuQueryParams) =>
     queryFn: async () => {
       const { data } = await menuAPI.getItems(params);
       return { items: data.data.data, pagination: data.data.pagination };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+export const useInfiniteMenuItems = (params?: MenuQueryParams) =>
+  useInfiniteQuery({
+    queryKey: ["infiniteMenuItems", params],
+    queryFn: async ({ pageParam = 1 }) => {
+      const { data } = await menuAPI.getItems({ ...params, page: pageParam as number });
+      return { items: data.data.data, pagination: data.data.pagination };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination && lastPage.pagination.hasNext) {
+        return lastPage.pagination.page + 1;
+      }
+      return undefined;
     },
     staleTime: 5 * 60 * 1000,
   });

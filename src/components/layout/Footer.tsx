@@ -119,9 +119,23 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-cream/10 mt-12 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-cream/50">
-          <p>
-            &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
-          </p>
+          <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center">
+            <p>
+              &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
+            </p>
+            <p className="hidden md:block text-cream/20">|</p>
+            <p>
+              Website designed & developed by{" "}
+              <a
+                href="https://www.upwork.com/freelancers/~01700c62beb4fd95f1?mp_source=share"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-cream transition-colors text-cream/70"
+              >
+                FOWORG
+              </a>
+            </p>
+          </div>
           <div className="flex gap-6">
             <Link
               to="/privacy-policy"

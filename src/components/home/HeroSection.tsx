@@ -1,9 +1,15 @@
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Flame, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { APP_NAME, APP_TAGLINE } from "@/utils/constants";
-import heroBg from "@/assets/hero-bg.jpg";
+import slide1 from "@/assets/hero-slide-1.png";
+import slide2 from "@/assets/hero-slide-2.png";
+import slide3 from "@/assets/hero-slide-3.png";
+import slide4 from "@/assets/hero-slide-4.jpg";
+
+const SLIDES = [slide1, slide2, slide3, slide4];
 
 const STATS = [
   { num: "4.9", suffix: "★", label: "Rating" },
@@ -12,33 +18,67 @@ const STATS = [
 ];
 
 const HeroSection = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    }, 5000); // Change slide every 5 seconds
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section
      className="relative min-h-[80vh] md:min-h-screen flex overflow-hidden"
       style={{ backgroundColor: "#0e0d0b" }}
     >
-      {/* ── MOBILE background image (ENHANCED VISIBILITY) ── */}
-      <div className="absolute inset-0 lg:hidden pointer-events-none">
-        <img
-          src={heroBg}
-          alt=""
-          aria-hidden
-          className="w-full h-full object-cover opacity-35"
-        />
-        {/* Warm overlay instead of plain dark */}
+      {/* ── FULLSCREEN BACKGROUND SLIDER ── */}
+      <div className="absolute inset-0 pointer-events-none bg-[#0e0d0b]">
+        {SLIDES.map((slide, index) => (
+          <div
+            key={index}
+            className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+            style={{ opacity: currentSlide === index ? 1 : 0 }}
+          >
+            <img
+              src={slide}
+              alt=""
+              aria-hidden
+              className="w-full h-full object-cover transition-transform duration-[10000ms] ease-linear"
+              style={{ transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)' }}
+            />
+          </div>
+        ))}
+
+        {/* ── GRADIENTS FOR TEXT READABILITY ── */}
+        {/* Dark overlay for text readability (desktop) */}
         <div
-          className="absolute inset-0 bg-gradient-to-b from-[#0e0d0b]/50 via-[#1a1410]/30 to-[#0e0d0b]/80"
+          className="absolute inset-0 hidden lg:block"
           style={{
-            background:
-              "linear-gradient(to bottom, rgba(14,13,11,0.5), rgba(26,20,16,0.35), rgba(14,13,11,0.85))",
+            background: "linear-gradient(to right, rgba(14,13,11,0.95) 0%, rgba(14,13,11,0.7) 40%, rgba(14,13,11,0.3) 100%)",
           }}
         />
-        {/* Warm glow accent at bottom */}
+        {/* Dark overlay for text readability (mobile) */}
+        <div
+          className="absolute inset-0 lg:hidden"
+          style={{
+            background: "linear-gradient(to bottom, rgba(14,13,11,0.6) 0%, rgba(26,20,16,0.5) 40%, rgba(14,13,11,0.95) 100%)",
+          }}
+        />
+        
+        {/* Warm glow accent */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background:
-              "radial-gradient(ellipse 100% 60% at 50% 100%, hsl(var(--primary) / 0.08) 0%, transparent 60%)",
+            background: "radial-gradient(ellipse 70% 50% at 70% 90%, hsl(var(--primary) / 0.15) 0%, transparent 65%)",
+          }}
+        />
+        
+        {/* Bottom vignette */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to top, rgba(14,13,11,0.9) 0%, rgba(26,20,16,0.2) 40%, transparent 70%)",
           }}
         />
       </div>
@@ -134,40 +174,8 @@ const HeroSection = () => {
         </motion.div>
       </div>
 
-      {/* ── RIGHT IMAGE PANEL (desktop only, ENHANCED) ── */}
-      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[52%] pointer-events-none">
-        <img
-          src={heroBg}
-          alt="Firewood grilled kebab"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-
-        {/* Enhanced left-to-right blend with warmer tones */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to right, #0e0d0b 0%, rgba(14,13,11,0.7) 30%, rgba(14,13,11,0.3) 65%, transparent 90%)",
-          }}
-        />
-
-        {/* Warm glow accent at bottom-right */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 50% at 70% 90%, hsl(var(--primary) / 0.12) 0%, transparent 65%)",
-          }}
-        />
-
-        {/* Bottom vignette with warmth */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(14,13,11,0.8) 0%, rgba(26,20,16,0.2) 40%, transparent 70%)",
-          }}
-        />
+      {/* ── FLOATING ELEMENTS (desktop only) ── */}
+      <div className="hidden lg:block absolute inset-0 pointer-events-none">
 
         {/* Floating signature dish card — ENHANCED */}
         <motion.div

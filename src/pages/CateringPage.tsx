@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   UtensilsCrossed,
@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useMenuItems } from "@/hooks/useApi";
+import { useMenuItems, useCategories } from "@/hooks/useApi";
 import { APP_NAME } from "@/utils/constants";
 import { toast } from "sonner";
 import type { MenuItem } from "@/types";
@@ -30,6 +30,8 @@ import CateringItemCard from "@/components/catering/CateringItemCard";
 import CateringSummary from "@/components/catering/CateringSummary";
 import { useCateringStore } from "@/store/cateringStore";
 import cateringBg from "@/assets/catering-bg.jpg";
+
+const SEEDED_CATEGORIES = ["Side Orders", "Soft Drinks", "Hot Drinks", "Rice Dishes", "Extra Skewers"];
 
 const features = [
   {
@@ -53,14 +55,60 @@ const features = [
 
 const CateringPage = () => {
   const [loading, setLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("all");
 
   const { data: cateringData, isLoading: menuLoading } = useMenuItems({
     isCatering: true,
-    limit: 100, // Make sure we get all catering items
+    limit: 500, // Make sure we get all catering items
   });
-  const cateringItems = cateringData?.items || [];
   
+  const cateringItems = useMemo(() => cateringData?.items || [], [cateringData]);
+  
+  const { data: apiCategories } = useCategories();
+
+  const sortedCategories = useMemo(() => {
+    const cats = [...(apiCategories ?? [])].filter(cat => 
+      cateringItems.some(item => item.categoryId === cat._id)
+    );
+    cats.sort((a, b) => {
+      const aIsSeeded = SEEDED_CATEGORIES.includes(a.name);
+      const bIsSeeded = SEEDED_CATEGORIES.includes(b.name);
+      if (aIsSeeded && !bIsSeeded) return 1;
+      if (!aIsSeeded && bIsSeeded) return -1;
+      return 0; 
+    });
+    return cats;
+  }, [apiCategories, cateringItems]);
+
+  const groupedItems = useMemo(() => {
+    let itemsToGroup = cateringItems;
+    if (activeCategory !== 'all') {
+      itemsToGroup = cateringItems.filter(item => item.categoryId === activeCategory);
+    }
+    const groups: Record<string, MenuItem[]> = {};
+    itemsToGroup.forEach((item: MenuItem) => {
+      if (!groups[item.categoryId]) {
+        groups[item.categoryId] = [];
+      }
+      groups[item.categoryId].push(item);
+    });
+    return groups;
+  }, [cateringItems, activeCategory]);
+
   const { items: cartItems, clearCart } = useCateringStore();
+
+  // On mobile, default to the first category instead of "all" to save vertical space
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024 && activeCategory === 'all' && sortedCategories.length > 0) {
+        setActiveCategory(sortedCategories[0]._id);
+      }
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeCategory, sortedCategories]);
 
   const { data: seoData } = useQuery({
     queryKey: ["seo", "catering"],
@@ -315,7 +363,7 @@ const CateringPage = () => {
       {/* ── CATERING BUILDER ── */}
       <section
         id="builder"
-        className="py-16 md:py-24 relative text-white"
+        className="py-16 md:py-24 relative text-white overflow-hidden"
         style={{
           backgroundImage: `url(${cateringBg})`,
           backgroundSize: "cover",
@@ -377,18 +425,103 @@ const CateringPage = () => {
               </motion.div>
             </div>
           ) : (
-            <div className="grid lg:grid-cols-[1fr,400px] gap-10 items-start">
+            <div className="grid lg:grid-cols-[1fr,360px] xl:grid-cols-[1fr,400px] gap-8 items-start min-w-0 w-full">
               {/* LEFT: Menu Grid */}
-              <div className="grid sm:grid-cols-2 gap-6 h-fit text-foreground">
+              <div className="flex flex-col gap-6 min-w-0 w-full max-w-full">
+                <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide w-full max-w-full">
+                  {[{ _id: "all", name: "All" }, ...sortedCategories].map((cat) => {
+                    const isActive = activeCategory === cat._id;
+                    const isAllBtn = cat._id === "all";
+                    return (
+                      <motion.button
+                        key={cat._id}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setActiveCategory(cat._id)}
+                        className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-300 shrink-0 relative ${isAllBtn ? 'hidden lg:block' : ''}`}
+                        style={
+                          isActive
+                            ? {
+                                background: "hsl(var(--primary))",
+                                color: "#fff",
+                                boxShadow: "0 4px 16px hsl(var(--primary) / 0.45)",
+                              }
+                            : {
+                                background: "rgba(255,255,255,0.08)",
+                                color: "rgba(255,255,255,0.7)",
+                                border: "1px solid rgba(255,255,255,0.12)",
+                              }
+                        }
+                        onMouseEnter={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+                            e.currentTarget.style.color = "#fff";
+                            e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                            e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                            e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                          }
+                        }}
+                      >
+                        {cat.name}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
                 {cateringItems.length > 0 ? (
-                  cateringItems.map((item: MenuItem) => (
-                    <CateringItemCard
-                      key={item._id}
-                      item={item}
-                    />
-                  ))
+                  <div className="space-y-12">
+                    {activeCategory !== 'all' ? (
+                      groupedItems[activeCategory]?.length > 0 ? (
+                        <div className="grid xl:grid-cols-2 gap-x-6 gap-y-2 h-fit text-foreground">
+                          <AnimatePresence mode="popLayout">
+                            {groupedItems[activeCategory].map((item: MenuItem) => (
+                              <CateringItemCard
+                                key={item._id}
+                                item={item}
+                              />
+                            ))}
+                          </AnimatePresence>
+                        </div>
+                      ) : (
+                        <div className="py-12 text-center text-white/50 text-sm">
+                          No catering items available in this category.
+                        </div>
+                      )
+                    ) : (
+                      sortedCategories.map(cat => {
+                        const itemsInCat = groupedItems[cat._id] || [];
+                        if (itemsInCat.length === 0) return null;
+                        
+                        const isMainCategory = !SEEDED_CATEGORIES.includes(cat.name);
+                        const displayLimit = isMainCategory ? 4 : 2;
+
+                        return (
+                          <div key={cat._id} className="space-y-4 pb-8">
+                            <h3 className="font-display text-xl font-bold border-b pb-2" style={{ color: "rgba(255,255,255,0.9)", borderColor: "rgba(255,255,255,0.1)" }}>
+                              {cat.name}
+                            </h3>
+                            <div className="grid xl:grid-cols-2 gap-x-6 gap-y-2 h-fit text-foreground min-w-0 w-full max-w-full">
+                              <AnimatePresence mode="popLayout">
+                                {itemsInCat.slice(0, displayLimit).map((item: MenuItem) => (
+                                  <CateringItemCard
+                                    key={item._id}
+                                    item={item}
+                                  />
+                                ))}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
                 ) : (
-                  <div className="col-span-full py-20 text-center flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl border border-border/50">
+                  <div className="col-span-full py-20 text-center flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl border border-border/50 text-foreground">
                     <UtensilsCrossed className="w-12 h-12 text-muted-foreground/30 mb-4" />
                     <h3 className="text-xl font-display font-semibold mb-2">No catering items found</h3>
                     <p className="text-muted-foreground text-sm max-w-sm">
