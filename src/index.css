@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@200..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:wght@100..900&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -53,6 +54,25 @@
     --cream: 35 28% 96%;
     --charcoal: 20 12% 14%;
     --spice-red: 6 78% 54%;
+
+    /* ── Catering Redesign Concept Tokens ── */
+    --char-950: #140F0C;
+    --char-900: #1C1512;
+    --char-850: #231B16;
+    --char-800: #2B221B;
+    --char-700: #3A2E24;
+    --line: rgba(246, 240, 228, 0.10);
+    --line-strong: rgba(246, 240, 228, 0.20);
+    --concept-cream: #F6F0E4;
+    --cream-dim: #ECE2CE;
+    --ink: #241C16;
+    --smoke: #948575;
+    --ember: #D6491F;
+    --ember-light: #F0862F;
+    --ember-ink: #7A2A11;
+    --gold: #C9A24B;
+    --concept-radius: 10px;
+    --concept-radius-sm: 6px;
 
     /* ── Gradients ── */
     --gradient-hero: linear-gradient(135deg, hsl(25 96% 53% / 0.88), hsl(6 78% 54% / 0.75));
